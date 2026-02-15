@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import '../../styles/Flight.css';
 
-function FlightSearch({ onSearch }) {
-  const [searchTerm, setSearchTerm] = useState('');
+function FlightSearch({ onSearch, initialValue = '' }) {
+  const [searchTerm, setSearchTerm] = useState(initialValue);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (searchTerm.trim()) {
-      onSearch(searchTerm.trim());
-    }
+    onSearch(searchTerm);
   };
 
   return (
@@ -16,7 +14,7 @@ function FlightSearch({ onSearch }) {
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Enter flight number, tail number, or entity name..."
+          placeholder="Search by flight number, tail number, entity, or airport..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"

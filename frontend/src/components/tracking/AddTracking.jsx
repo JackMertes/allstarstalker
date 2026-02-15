@@ -1,30 +1,37 @@
 import React, { useState } from 'react';
 
-const AddTracking = ({ onAdd }) => {
-  const [trackingName, setTrackingName] = useState('');
+function AddTracking({ onAdd }) {
+  const [newTracking, setNewTracking] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (trackingName.trim() && onAdd) {
-      onAdd(trackingName);
-      setTrackingName('');
-    }
+    if (!newTracking.trim()) return;
+
+    // Pass the new tracking value to parent
+    onAdd(newTracking.trim());
+
+    // Clear input
+    setNewTracking('');
   };
 
   return (
-    <div className="add-tracking">
-      <h3>Add Tracking</h3>
-      <form onSubmit={handleSubmit}>
+    <div style={{ background: 'white', padding: '24px', borderRadius: '8px', marginBottom: '24px' }}>
+      <h3 style={{ marginTop: 0 }}>Add New Tracking</h3>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '12px' }}>
         <input
           type="text"
-          placeholder="Enter flight, aircraft, or entity name"
-          value={trackingName}
-          onChange={(e) => setTrackingName(e.target.value)}
+          placeholder="Enter flight number, tail number, or entity name..."
+          value={newTracking}
+          onChange={(e) => setNewTracking(e.target.value)}
+          className="search-input"
+          style={{ flex: 1 }}
         />
-        <button type="submit" className="btn btn-primary">Add</button>
+        <button type="submit" className="btn btn-primary">
+          Add Tracking
+        </button>
       </form>
     </div>
   );
-};
+}
 
 export default AddTracking;
