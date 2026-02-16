@@ -14,10 +14,16 @@ logs/
 
 
 ############################################################
-# Maven Build Output
+# Maven Build Output (if any Maven subprojects)
 ############################################################
 /target/
 dependency-reduced-pom.xml
+
+############################################################
+# Gradle Build Output (backend uses Gradle)
+############################################################
+/build/
+.gradle/
 
 
 ############################################################
@@ -27,6 +33,17 @@ dependency-reduced-pom.xml
 *.jar
 *.war
 *.ear
+*.nar
+hs_err_*.log
+
+
+############################################################
+# Node (frontend; safety net if npm run from root)
+############################################################
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 
 ############################################################
@@ -35,6 +52,9 @@ dependency-reduced-pom.xml
 .idea/
 .vscode/
 *.iml
+*.swp
+*.swo
+*~
 
 
 ############################################################
