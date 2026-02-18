@@ -6,7 +6,7 @@ Also, be sure to check out the Wiki for information on how to maintain your team
 -->
 ## TeamName
 
-Team 3b 
+Star Stalker
  <!--The name of your team.-->
 
 ### Project Abstract
@@ -85,7 +85,7 @@ classDiagram
 -->
 
 #### Flowchart
-In Progress
+In Progress. Generic Example:
 ```mermaid
 ---
 title: Sample Program Flowchart
@@ -105,22 +105,25 @@ graph TD;
 
 #### Behavior
 In Progress
+<!-- add extra line to each arrow below when uncommenting
 ```mermaid
 ---
 title: State Diagram For Celebrity Flight Tracker
 ---
 stateDiagram
-    [*] --> Ready
-    Ready --> Highlight Search Box : Click Search Box
-    Highlight Search Box --> Search: Enter Name
-		Search --> Query DB: Process Search Term
-		Query Name --> Result Set: Query DB
-		Result Set --> Backend: Process Results
-		Backend --> Frontend: Display Results
+    [*] -> Ready
+    Ready -> Highlight Search Box : Click Search Box
+    Highlight Search Box -> Search: Enter Name
+		Search -> Query DB: Process Search Term
+		Query Name -> Result Set: Query DB
+		Result Set -> Backend: Process Results
+		Backend -> Frontend: Display Results
 ```
+-->
 
 #### Sequence Diagram
-
+In Progress
+<!-- arros below were tampered to allow comment
 ```mermaid
 sequenceDiagram
 
@@ -134,13 +137,13 @@ activate DjangoBackend
 SpringBoot ->> MySQLDatabase: Query (e.g., SELECT * FROM data_table)
 activate MySQLDatabase
 
-MySQLDatabase -->> SpringBoot: Result Set
+MySQLDatabase ->> SpringBoot: Result Set
 deactivate MySQLDatabase
 
-SpringBoot -->> ReactFrontend: JSON Response
+SpringBoot ->> ReactFrontend: JSON Response
 deactivate DjangoBackend
 ```
-
+-->
 ### Standards & Conventions
 
 <!--This is a link to a seperate coding conventions document / style guide-->
