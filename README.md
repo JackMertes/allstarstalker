@@ -16,7 +16,7 @@ This is an example paragraph written in markdown. You can use *italics*, **bold*
 -->
 Team 3b will create a Celebrity Flight Tracker. This project will read flight logs and track relevant information pertaining to celebrities and their flights. Users will be able to look up and filter through this information with a variety of characteristics such as the name of the celebrity, airport destination/origin, travel dates and so on.
 
-### Scrum Goal
+### Sprint Goal
 Implement the first functional increment of the system by March 2: a working GET /flights endpoint in Spring Boot connected to a MySQL table, and a React UI that displays the returned results. Success is measured by demonstrating that changes in the database are visible in the frontend without manual intervention.
 
 ### Customer
