@@ -1,70 +1,24 @@
-# Flight Tracker Database
+# /database
 
-## Quick Setup
+This directory contains static data files used for development and seeding.
 
-### Prerequisites
-- MySQL 8.0 or higher
-- MySQL client tools
+## Files
 
-### Setup Instructions
+**`teams.json`** — list of tracked teams and their charter flight callsigns. Use this to seed the MySQL `teams` table.
 
-1. **Create database and run schema:**
-```bash
-   cd database
-   chmod +x scripts/setup_database.sh
-   ./scripts/setup_database.sh
+**`flights_snapshot.json`** — a real snapshot of flight data captured from the Airplanes.live API. Use this as mock data when building the frontend before the backend is ready. Each entry preserves the last known flight data for a team even when the plane is not currently flying.
+
+## How the API Works
+
+Flight data comes from the [Airplanes.live REST API](http://api.airplanes.live/v2/). You query it by charter callsign and it returns live ADS-B data for that flight if the plane is currently in the air.
+
+```
+GET http://api.airplanes.live/v2/callsign/DAL8931
 ```
 
-2. **Or manual setup:**
-```bash
-   mysql -u root -p
-   CREATE DATABASE flight_tracker;
-   USE flight_tracker;
-   SOURCE schema/01_create_tables.sql;
-   SOURCE schema/02_create_indexes.sql;
-   SOURCE schema/03_create_views.sql;
-   SOURCE schema/04_create_procedures.sql;
-   SOURCE seeds/01_seed_aircraft.sql;
-   SOURCE seeds/02_seed_tracked_entities.sql;
-   SOURCE seeds/03_seed_sample_flights.sql;
-```
+If the plane is flying you get back position, altitude, speed, and heading. If it is not flying you get back `total: 0` and an empty array — this is normal. The snapshot file handles this by preserving the last known data rather than overwriting it with an empty response.
 
-## Database Structure
+No authentication is required. Wait at least 10 seconds between requests to avoid rate limiting.
 
-### Core Tables
-- `aircraft` - Aircraft information
-- `tracked_entity` - Entities to track (celebrities, companies)
-- `entity_aircraft` - Links entities to aircraft
-- `flight` - Flight records
-- `flight_position` - Real-time position data
-- `user_tracking` - User tracking preferences
-- `api_request_log` - API usage logs
-
-### Views
-- `active_flights_view` - All active flights with entity info
-- `flight_history_view` - Historical flight data
-
-### Stored Procedures
-- `cleanup_old_positions()` - Remove old position data
-- `cleanup_old_api_logs()` - Remove old API logs
-- `get_flight_statistics()` - Flight statistics report
-
-## Maintenance
-
-Run cleanup procedures weekly:
-```sql
-CALL cleanup_old_positions();
-CALL cleanup_old_api_logs();
-```
-
-## Backup & Restore
-
-**Backup:**
-```bash
-./scripts/backup_database.sh
-```
-
-**Restore:**
-```bash
-./scripts/restore_database.sh backup_file.sql
-```
+## Notes
+- need to develop the script that refreshes `flights_snapshot.json` so we can populate it with the most recent data
