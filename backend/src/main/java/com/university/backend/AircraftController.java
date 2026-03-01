@@ -1,37 +1,27 @@
-package.com.university.backend;
+package com.university.backend;
 
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import java.time.LocalDateTime;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/aircraft")
 public class AircraftController {
-    
+
     @GetMapping("")
     public ResponseEntity<String> getAllAircraft() {
-        ResponseEntity.ok("Implement by returning all aircraft");
+        return ResponseEntity.ok("Implement by returning all aircraft");
     }
 
     @GetMapping("/{aircraftId}")
-    public ResponseEntity<String> getAircraftById(@PathVariable int aircraftID) {
-        ResponseEntity.ok("Implement. Return the plane: " + aircraftID);
+    public ResponseEntity<String> getAircraftById(@PathVariable String aircraftId) {
+        return ResponseEntity.ok("Implement. Return the plane: " + aircraftId);
     }
 
     @GetMapping("/tail/{tailNumber}")
-    public ResponseEntity<String> getAircraftByTailNumber(@PathVariable int tailNumber) {
-        ResponseEntity.ok("Implement. Return plane with tail #" + tailNumber);
+    public ResponseEntity<String> getAircraftByTailNumber(@PathVariable String tailNumber) {
+        return ResponseEntity.ok("Implement. Return plane with tail #" + tailNumber);
     }
-
-}
-
-// Use as DTO
-private static class Aircraft {
-	private int trackingID = 2;
-	private Type type;
-	private int aircraftID;
-	private String tailNum;
-	private boolean notif;
-	private LocalDateTime time;
 }
