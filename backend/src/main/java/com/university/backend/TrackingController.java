@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 import org.springframework.web.client.RestTemplate;
 import java.util.Map;
 
+/**
+ * GET /api/tracking - returns list of tracked items (expected by frontend TrackingPage).
+ */
+
 @RestController
 @RequestMapping("/api/tracking")
 public class TrackingController {
