@@ -105,12 +105,17 @@ public class MockDataService {
                 .collect(Collectors.toList());
     }
 
-    public List<Map<String, Object>> searchFlights(String flightNumber) {
-        if (flightNumber == null) return flights;
-
+    public List<Map<String, Object>> searchFlights(String searchTerm) {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return flights;
+        }
+        
         return flights.stream()
-                .filter(f -> f.get("flightNumber").toString().contains(flightNumber))
-                .collect(Collectors.toList());
+            .filter(f -> (f.get("flightNumber") != null && f.get("flightNumber").toString().toLowerCase().contains(searchTerm.toLowerCase())) ||
+                 (f.get("tailNumber") != null && f.get("tailNumber").toString().toLowerCase().contains(searchTerm.toLowerCase())) ||
+                 (f.get("status") != null && f.get("status").toString().toLowerCase().contains(searchTerm.toLowerCase())) ||
+                 (f.get("flightId") != null && f.get("flightId").toString().contains(searchTerm)))
+            .collect(Collectors.toList());
     }
 
     public List<Map<String, Object>> getAllAircraft() {

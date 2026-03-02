@@ -33,13 +33,15 @@ public class FlightController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> search(@RequestParam(required = false) String flightNumber) {
+    public ResponseEntity<?> search(@RequestParam(required = false) String searchTerm) {
         try {
-            return restTemplate.getForEntity(
-                    "https://allanswers.com/api/flights/search?flightNumber=" + flightNumber,
-                    Object.class);
+            String url = "https://allanswers.com/api/flights/search";
+            if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+                url += "?searchTerm=" + searchTerm;
+            }
+            return restTemplate.getForEntity(url, Object.class);
         } catch (Exception e) {
-            return ResponseEntity.ok(mock.searchFlights(flightNumber));
+            return ResponseEntity.ok(mock.searchFlights(searchTerm));
         }
     }
 
