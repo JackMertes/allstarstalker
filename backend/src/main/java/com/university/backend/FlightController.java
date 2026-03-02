@@ -6,33 +6,87 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/flights")
 public class FlightController {
 
+    private final RestTemplate restTemplate;
+    private final MockDataService mock;
+
+    public FlightController(RestTemplate restTemplate, MockDataService mock) {
+        this.restTemplate = restTemplate;
+        this.mock = mock;
+    }
+
+    @GetMapping("")
+    public ResponseEntity<?> getAllFlights() {
+        try {
+            return restTemplate.getForEntity(
+                    "https://allanswers.com/api/flights",
+                    Object.class);
+        } catch (Exception e) {
+            return ResponseEntity.ok(mock.getAllFlights());
+        }
+    }
+
     @GetMapping("/search")
-    public ResponseEntity<String> search(@RequestParam(required = false) String flightNumber) {
-        return ResponseEntity.ok("Implement /search. FlightNumber: " + flightNumber);
+    public ResponseEntity<?> search(@RequestParam(required = false) String flightNumber) {
+        try {
+            return restTemplate.getForEntity(
+                    "https://allanswers.com/api/flights/search?flightNumber=" + flightNumber,
+                    Object.class);
+        } catch (Exception e) {
+            return ResponseEntity.ok(mock.searchFlights(flightNumber));
+        }
     }
 
     @GetMapping("/{flightId}")
-    public ResponseEntity<String> getByFlightID(@PathVariable String flightId) {
-        return ResponseEntity.ok("Implement /{flightId}");
+    public ResponseEntity<?> getByFlightID(@PathVariable String flightId) {
+        try {
+            return restTemplate.getForEntity(
+                    "https://allanswers.com/api/flights/" + flightId,
+                    Object.class);
+        } catch (Exception e) {
+            return ResponseEntity.ok(mock.getFlightById(flightId));
+        }
     }
 
     @GetMapping("/{flightId}/details")
-    public ResponseEntity<String> getDetails(@PathVariable String flightId) {
-        return ResponseEntity.ok("Implement /{flightId}/details");
+    public ResponseEntity<?> getDetails(@PathVariable String flightId) {
+        try {
+            return restTemplate.getForEntity(
+                    "https://allanswers.com/api/flights/" + flightId + "/details",
+                    Object.class);
+        } catch (Exception e) {
+            return ResponseEntity.ok(mock.getFlightById(flightId));
+        }
     }
 
     @GetMapping("/active")
-    public ResponseEntity<String> getActive() {
-        return ResponseEntity.ok("Implement /active. Return all active flights");
+    public ResponseEntity<?> getActive() {
+        try {
+            return restTemplate.getForEntity(
+                    "https://allanswers.com/api/flights/active",
+                    Object.class);
+        } catch (Exception e) {
+            return ResponseEntity.ok(mock.getActiveFlights());
+        }
     }
 
     @GetMapping("/{flightId}/positions")
-    public ResponseEntity<String> getPositions(@PathVariable String flightId) {
-        return ResponseEntity.ok("Implement /{flightId}/positions");
+    public ResponseEntity<?> getPositions(@PathVariable String flightId) {
+        try {
+            return restTemplate.getForEntity(
+                    "https://allanswers.com/api/flights/" + flightId + "/positions",
+                    Object.class);
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of(
+                    "flightId", flightId,
+                    "positions", "Mock positions unavailable"
+            ));
+        }
     }
 }

@@ -9,27 +9,49 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.ResponseEntity;
 import java.time.LocalDateTime;
+import org.springframework.web.client.RestTemplate;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tracking")
 public class TrackingController {
+
+    private final RestTemplate restTemplate;
+    private final MockDataService mock;
+
+    public TrackingController(RestTemplate restTemplate, MockDataService mock) {
+        this.restTemplate = restTemplate;
+        this.mock = mock;
+    }
+
+    @GetMapping("")
+    public ResponseEntity<?> getAllTracking() {
+        try {
+            return restTemplate.getForEntity(
+                    "https://allanswers.com/api/tracking",
+                    Object.class);
+        } catch (Exception e) {
+            return ResponseEntity.ok(mock.getUserTrackings());
+        }
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> addTracking(@PathVariable int userId) {
+        try {
+            return restTemplate.getForEntity(
+                    "https://allanswers.com/api/tracking/user/" + userId,
+                    Object.class);
+        } catch (Exception e) {
+            return ResponseEntity.ok(mock.getUserTrackings());
+        }
+    }
 
     @PostMapping("")
     public ResponseEntity<String> getUserTracking(@RequestBody Celeb obj) {
         if (obj.getTrackingID() != 1)
             return ResponseEntity.badRequest().body("Only celebs allowed so far(trackingID==1)");
 
-        System.out.println("Tracking ID: " + obj.getTrackingID() + "\n" +
-                            "Entity Type: " + obj.getEntityType() + "\n"  +
-                            "Name: " + obj.getName() + "\n" +
-                            "Time: " + obj.getTime());
-
         return ResponseEntity.ok("Impl in progress. Compare output with arguments.");
-    }
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<String> addTracking(@PathVariable int userId) {
-        return ResponseEntity.ok("Implement GET service. Given userID: " + userId);
     }
 
     @DeleteMapping("/{trackingId}")
@@ -42,10 +64,6 @@ public class TrackingController {
         private String type;
         private String entityName;
         private boolean notif;
-        private LocalDateTime time;
         public int getTrackingID() { return trackingID; }
-        public String getEntityType() { return type; }
-        public String getName() { return entityName; }
-        public LocalDateTime getTime() { return time; }
     }
 }
