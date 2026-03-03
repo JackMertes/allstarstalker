@@ -96,9 +96,62 @@
                   "DAL8918":  {
                                   "team":  "Atlanta Hawks",
                                   "callsign":  "DAL8918",
-                                  "is_flying":  false,
-                                  "last_seen":  null,
-                                  "raw":  null
+                                  "is_flying":  true,
+                                  "last_seen":  1772571363001,
+                                  "raw":  {
+                                              "ac":  [
+                                                         {
+                                                             "hex":  "a89fa3",
+                                                             "type":  "adsb_icao",
+                                                             "flight":  "DAL8918 ",
+                                                             "r":  "N655DL",
+                                                             "t":  "B752",
+                                                             "desc":  "BOEING 757-200",
+                                                             "ownOp":  "BANK OF UTAH TRUSTEE",
+                                                             "year":  "1990",
+                                                             "alt_baro":  2525,
+                                                             "alt_geom":  2500,
+                                                             "gs":  257.5,
+                                                             "track":  250.02,
+                                                             "baro_rate":  -384,
+                                                             "squawk":  "6054",
+                                                             "emergency":  "none",
+                                                             "category":  "A4",
+                                                             "nav_qnh":  1020.8,
+                                                             "nav_altitude_mcp":  2688,
+                                                             "nav_heading":  255.23,
+                                                             "lat":  42.801803,
+                                                             "lon":  -88.117953,
+                                                             "nic":  8,
+                                                             "rc":  186,
+                                                             "seen_pos":  0.000,
+                                                             "version":  2,
+                                                             "nic_baro":  1,
+                                                             "nac_p":  10,
+                                                             "nac_v":  2,
+                                                             "sil":  3,
+                                                             "sil_type":  "perhour",
+                                                             "gva":  2,
+                                                             "sda":  2,
+                                                             "alert":  0,
+                                                             "spi":  0,
+                                                             "mlat":  [
+
+                                                                      ],
+                                                             "tisb":  [
+
+                                                                      ],
+                                                             "messages":  149051,
+                                                             "seen":  0.0,
+                                                             "rssi":  -7.1
+                                                         }
+                                                     ],
+                                              "msg":  "No error",
+                                              "now":  1772571363001,
+                                              "total":  1,
+                                              "ctime":  1772571363001,
+                                              "ptime":  0
+                                          }
                               },
                   "DAL8936":  {
                                   "team":  "Oklahoma City Thunder",
@@ -107,9 +160,9 @@
                                   "last_seen":  null,
                                   "raw":  null
                               },
-                  "DAL8927":  {
-                                  "team":  "Indiana Pacers",
-                                  "callsign":  "DAL8927",
+                  "DAL8928":  {
+                                  "team":  "Los Angeles Clippers",
+                                  "callsign":  "DAL8928",
                                   "is_flying":  false,
                                   "last_seen":  null,
                                   "raw":  null
@@ -180,13 +233,6 @@
                   "DAL8935":  {
                                   "team":  "New York Knicks",
                                   "callsign":  "DAL8935",
-                                  "is_flying":  false,
-                                  "last_seen":  null,
-                                  "raw":  null
-                              },
-                  "DAL8928":  {
-                                  "team":  "Los Angeles Clippers",
-                                  "callsign":  "DAL8928",
                                   "is_flying":  false,
                                   "last_seen":  null,
                                   "raw":  null
@@ -313,12 +359,65 @@
                                               "ptime":  0
                                           }
                               },
-                  "DAL8934":  {
-                                  "team":  "New Orleans Pelicans",
-                                  "callsign":  "DAL8934",
-                                  "is_flying":  false,
-                                  "last_seen":  null,
-                                  "raw":  null
+                  "DAL8927":  {
+                                  "team":  "Indiana Pacers",
+                                  "callsign":  "DAL8927",
+                                  "is_flying":  true,
+                                  "last_seen":  1772571455001,
+                                  "raw":  {
+                                              "ac":  [
+                                                         {
+                                                             "hex":  "a8947e",
+                                                             "type":  "adsb_icao",
+                                                             "flight":  "DAL8927 ",
+                                                             "r":  "N652DL",
+                                                             "t":  "B752",
+                                                             "desc":  "BOEING 757-200",
+                                                             "ownOp":  "BANK OF UTAH TRUSTEE",
+                                                             "year":  "1989",
+                                                             "alt_baro":  35950,
+                                                             "alt_geom":  36650,
+                                                             "gs":  377.2,
+                                                             "track":  254.78,
+                                                             "baro_rate":  0,
+                                                             "squawk":  "4020",
+                                                             "emergency":  "none",
+                                                             "category":  "A4",
+                                                             "nav_qnh":  1013.6,
+                                                             "nav_altitude_mcp":  36000,
+                                                             "nav_heading":  258.05,
+                                                             "lat":  37.999288,
+                                                             "lon":  -96.435122,
+                                                             "nic":  8,
+                                                             "rc":  186,
+                                                             "seen_pos":  0.410,
+                                                             "version":  2,
+                                                             "nic_baro":  1,
+                                                             "nac_p":  10,
+                                                             "nac_v":  2,
+                                                             "sil":  3,
+                                                             "sil_type":  "perhour",
+                                                             "gva":  2,
+                                                             "sda":  2,
+                                                             "alert":  0,
+                                                             "spi":  0,
+                                                             "mlat":  [
+
+                                                                      ],
+                                                             "tisb":  [
+
+                                                                      ],
+                                                             "messages":  108924,
+                                                             "seen":  0.0,
+                                                             "rssi":  -19.0
+                                                         }
+                                                     ],
+                                              "msg":  "No error",
+                                              "now":  1772571455001,
+                                              "total":  1,
+                                              "ctime":  1772571455001,
+                                              "ptime":  0
+                                          }
                               },
                   "DAL8925":  {
                                   "team":  "Detroit Pistons",
@@ -461,6 +560,13 @@
                                   "last_seen":  null,
                                   "raw":  null
                               },
+                  "DAL8934":  {
+                                  "team":  "New Orleans Pelicans",
+                                  "callsign":  "DAL8934",
+                                  "is_flying":  false,
+                                  "last_seen":  null,
+                                  "raw":  null
+                              },
                   "DAL8940":  {
                                   "team":  "Portland Trail Blazers",
                                   "callsign":  "DAL8940",
@@ -476,5 +582,5 @@
                                   "raw":  null
                               }
               },
-    "snapshot_time":  1772471601000
+    "snapshot_time":  1772550039000
 }
