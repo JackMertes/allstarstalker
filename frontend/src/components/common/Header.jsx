@@ -7,7 +7,7 @@ function Header() {
     <header className="header">
       <div className="header-container">
         <Link to="/" className="logo">
-          <h1>✈️ Flight Tracker</h1>
+          <h1>✈️ Sports Team Tracker</h1>
         </Link>
         <nav className="nav">
           <Link to="/" className="nav-link">Home</Link>

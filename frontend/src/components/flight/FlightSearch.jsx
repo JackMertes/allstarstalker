@@ -14,7 +14,7 @@ function FlightSearch({ onSearch, initialValue = '' }) {
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Search by flight number, tail number, entity, or airport..."
+          placeholder="Search by team name, category, or callsign..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"

@@ -1,14 +1,15 @@
 import React, { useEffect } from 'react';
 import FlightSearch from '../components/flight/FlightSearch';
-import FlightList from '../components/flight/FlightList';
+import TeamList from '../components/flight/TeamList';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ErrorMessage from '../components/common/ErrorMessage';
 import flightService from '../services/flightService';
 import { useApp } from '../context/AppContext';
-import { mockFlights, searchFlights } from '../utils/mockData';
+import teamService from '../services/teamService';
+import { mockTeams,searchTeams,mockFlights, searchFlights } from '../utils/mockData';
 import '../styles/Flight.css';
 
-//Toggle this to false once the backend /flights/search endpoint is live
+// Toggle this to false once the backend /api/teams endpoint is live
 const USE_MOCK = true;
 
 function SearchPage() {
@@ -19,17 +20,34 @@ function SearchPage() {
     searchResults, setSearchResults,
   } = useApp();
 
-  //On first mount, show all mock flights (or all real flights) if nothing searched yet
+  // On first mount, show all teams
   useEffect(() => {
     if (searchResults === null) {
       if (USE_MOCK) {
-        setSearchResults(mockFlights);
+        setSearchResults(mockTeams);
       } else {
-        handleSearch('');
+        fetchAllTeams();
       }
     }
-    //eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const fetchAllTeams = async () => {
+    setLoading(true);
+    clearError();
+    
+    try {
+      const teams = await teamService.getAllTeams();
+      setSearchResults(teams);
+    } catch (err) {
+      console.error('Failed to fetch teams:', err);
+      setError('Failed to load teams. Using mock data.');
+      // Fallback to mock data
+      setSearchResults(mockTeams);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = async (query) => {
     setSearchTerm(query);
@@ -39,16 +57,28 @@ function SearchPage() {
     try {
       let results;
       if (USE_MOCK) {
-        //Simulate network delay so the spinner is visible
+        // Simulate network delay
         await new Promise(res => setTimeout(res, 400));
-        results = searchFlights(query);
+        results = searchTeams(query);
       } else {
-        //Real API call - GET /api/flights/search?flightNumber=<query>
-        results = await flightService.searchByFlightNumber(query);
+        // Real API call - if backend supports search, use it
+        // Otherwise filter client-side
+        const allTeams = await teamService.getAllTeams();
+        if (!query) {
+          results = allTeams;
+        } else {
+          const searchTerm = query.toLowerCase();
+          results = allTeams.filter(team =>
+            team.team.toLowerCase().includes(searchTerm) ||
+            team.category.toLowerCase().includes(searchTerm) ||
+            team.callsign.toLowerCase().includes(searchTerm)
+          );
+        }
       }
       setSearchResults(results);
     } catch (err) {
-      setError('Failed to search flights. Please try again.');
+      console.error('Search error:', err);
+      setError('Failed to search teams. Please try again.');
       setSearchResults([]);
     } finally {
       setLoading(false);
@@ -57,15 +87,15 @@ function SearchPage() {
 
   return (
     <div className="search-page">
-      <h1>Search Flights</h1>
+      <h1>Search Teams</h1>
       <FlightSearch onSearch={handleSearch} initialValue={searchTerm} />
 
-      {error && <ErrorMessage message={error} onRetry={clearError} />}
+      {error && <ErrorMessage message={error} onRetry={() => handleSearch(searchTerm)} />}
 
       {loading ? (
-        <LoadingSpinner message="Searching flights..." />
+        <LoadingSpinner message="Searching teams..." />
       ) : (
-        <FlightList flights={searchResults || []} searchTerm={searchTerm} />
+        <TeamList teams={searchResults || []} searchTerm={searchTerm} />
       )}
     </div>
   );

@@ -20,6 +20,7 @@ public class MockDataService {
     private final List<Map<String, Object>> flights = new ArrayList<>();
     private final List<Map<String, Object>> aircraft = new ArrayList<>();
     private final List<Map<String, Object>> userTrackings = new ArrayList<>();
+        private final List<Map<String, Object>> teams = new ArrayList<>();
 
     public MockDataService() {
 
@@ -86,11 +87,44 @@ public class MockDataService {
             "notificationEnabled", true,
             "createdAt", "2024-02-01T10:00:00"
         ));
+            // NBA Teams mock data
+            teams.add(Map.of("team", "Atlanta Hawks", "callsign", "DAL8918", "category", "NBA"));
+            teams.add(Map.of("team", "Boston Celtics", "callsign", "DAL8919", "category", "NBA"));
+            teams.add(Map.of("team", "Brooklyn Nets", "callsign", "DAL8920", "category", "NBA"));
+            teams.add(Map.of("team", "Charlotte Hornets", "callsign", "DAL8921", "category", "NBA"));
+            teams.add(Map.of("team", "Chicago Bulls", "callsign", "DAL8922", "category", "NBA"));
+            teams.add(Map.of("team", "Cleveland Cavaliers", "callsign", "DAL8923", "category", "NBA"));
+            teams.add(Map.of("team", "Denver Nuggets", "callsign", "DAL8924", "category", "NBA"));
+            teams.add(Map.of("team", "Detroit Pistons", "callsign", "DAL8925", "category", "NBA"));
+            teams.add(Map.of("team", "Golden State Warriors", "callsign", "DAL8926", "category", "NBA"));
+            teams.add(Map.of("team", "Indiana Pacers", "callsign", "DAL8927", "category", "NBA"));
+            teams.add(Map.of("team", "Los Angeles Clippers", "callsign", "DAL8928", "category", "NBA"));
+            teams.add(Map.of("team", "Los Angeles Lakers", "callsign", "DAL8929", "category", "NBA"));
+            teams.add(Map.of("team", "Memphis Grizzlies", "callsign", "DAL8930", "category", "NBA"));
+            teams.add(Map.of("team", "Miami Heat", "callsign", "DAL8931", "category", "NBA"));
+            teams.add(Map.of("team", "Milwaukee Bucks", "callsign", "DAL8932", "category", "NBA"));
+            teams.add(Map.of("team", "Minnesota Timberwolves", "callsign", "DAL8933", "category", "NBA"));
+            teams.add(Map.of("team", "New Orleans Pelicans", "callsign", "DAL8934", "category", "NBA"));
+            teams.add(Map.of("team", "New York Knicks", "callsign", "DAL8935", "category", "NBA"));
+            teams.add(Map.of("team", "Oklahoma City Thunder", "callsign", "DAL8936", "category", "NBA"));
+            teams.add(Map.of("team", "Orlando Magic", "callsign", "DAL8937", "category", "NBA"));
+            teams.add(Map.of("team", "Philadelphia 76ers", "callsign", "DAL8938", "category", "NBA"));
+            teams.add(Map.of("team", "Phoenix Suns", "callsign", "DAL8939", "category", "NBA"));
+            teams.add(Map.of("team", "Portland Trail Blazers", "callsign", "DAL8940", "category", "NBA"));
+            teams.add(Map.of("team", "Sacramento Kings", "callsign", "DAL8941", "category", "NBA"));
+            teams.add(Map.of("team", "San Antonio Spurs", "callsign", "DAL8942", "category", "NBA"));
+            teams.add(Map.of("team", "Toronto Raptors", "callsign", "DAL8943", "category", "NBA"));
+            teams.add(Map.of("team", "Utah Jazz", "callsign", "DAL8944", "category", "NBA"));
+            teams.add(Map.of("team", "Washington Wizards", "callsign", "DAL8945", "category", "NBA"));
     }
 
     public List<Map<String, Object>> getAllFlights() {
         return flights;
     }
+    
+        public List<Map<String, Object>> getTeams() {
+            return teams;
+        }
 
     public Map<String, Object> getFlightById(String id) {
         return flights.stream()

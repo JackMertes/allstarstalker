@@ -14,7 +14,7 @@ import './styles/App.css';
 import './styles/Common.css';
 import './styles/Flight.css';
 import { Header,Footer,LoadingSpinner } from './components/common';// COMMON COMPONENTS
-import { FlightStatus,FlightCard,FlightSearch,FlightDetails} from './components/flight';// FLIGHT COMPONENTS
+import { FlightStatus,TeamCard,FlightSearch,FlightDetails} from './components/flight';// FLIGHT COMPONENTS
 import { TrackingList, AddTracking } from './components/tracking';//TRACKING PAGE COMPONENTS
 import { HomePage,SearchPage,TrackingPage,NotFoundPage,FlightDetailsPage } from './pages';//GENERAL PAGE COMPONENTS
 
