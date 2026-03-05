@@ -11,7 +11,7 @@ import {
 import { mockTeams } from '../utils/mockData';
 
 // Toggle to false when backend is ready
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 function HomePage() {
   const [teams, setTeams] = useState([]);
@@ -31,7 +31,7 @@ function HomePage() {
         teamsData = mockTeams.slice(0, 4); // Show first 4 teams on homepage
       } else {
         const allTeams = await teamService.getAllTeams();
-        teamsData = allTeams.slice(0, 4); // Show first 4 teams
+        teamsData = allTeams.slice(0, 6); // Show first 6 teams
       }
       setTeams(teamsData);
     } catch (error) {
@@ -81,7 +81,7 @@ function HomePage() {
 
       {/* Featured Teams Section */}
       <div style={{ marginTop: '40px' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '24px' }}>Featured Teams</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '24px' }}>Few of the Featured Teams</h2>
         {loading ? (
           <LoadingSpinner message="Loading teams..." />
         ) : teams.length > 0 ? (

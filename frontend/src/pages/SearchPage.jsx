@@ -10,7 +10,7 @@ import { mockTeams,searchTeams,mockFlights, searchFlights } from '../utils/mockD
 import '../styles/Flight.css';
 
 // Toggle this to false once the backend /api/teams endpoint is live
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 function SearchPage() {
   const {
@@ -41,7 +41,7 @@ function SearchPage() {
       setSearchResults(teams);
     } catch (err) {
       console.error('Failed to fetch teams:', err);
-      setError('Failed to load teams. Using mock data.');
+      //setError('Failed to load teams. Using mock data.');
       // Fallback to mock data
       setSearchResults(mockTeams);
     } finally {

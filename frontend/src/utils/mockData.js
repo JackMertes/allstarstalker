@@ -1,6 +1,11 @@
 // Mock Teams Data
 export const mockTeams = [
   {
+    category: "CS506",
+    callsign: "3B",
+    team: "Star Stalker (returned from front end mock)"
+  },
+  {
     category: "NBA",
     callsign: "DAL8918",
     team: "Atlanta Hawks"
@@ -124,16 +129,18 @@ export const mockUserTrackings = [
   {
     trackingId: 1,
     callsign: "DAL8924",
-    team: "Denver Nuggets",
+    team: "Denver Nuggets (front-end)",
     category: "NBA",
+    type: "team",
     notificationEnabled: true,
     createdAt: '2024-02-01T10:00:00'
   },
   {
     trackingId: 2,
     callsign: "DAL9001",
-    team: "Dallas Cowboys",
+    team: "Dallas Cowboys (front-end)",
     category: "NFL",
+    type: "team",
     notificationEnabled: false,
     createdAt: '2024-02-05T14:30:00'
   }

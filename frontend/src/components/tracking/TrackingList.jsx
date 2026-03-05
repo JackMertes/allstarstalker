@@ -35,7 +35,7 @@ function TrackingList({ trackings, onRemove, onToggleNotification }) {
               <div style={{ fontWeight: '600', marginBottom: '4px' }}>
                 {tracking.type === 'entity' && `${tracking.entityName} (${tracking.entityType})`}
                 {tracking.type === 'aircraft' && `${tracking.tailNumber} - ${tracking.aircraftType}`}
-                {tracking.type === 'flight' && `Flight ${tracking.flightNumber}`}
+                {tracking.type === 'team' && `${tracking.team}`}
               </div>
               <div style={{ fontSize: '14px', color: '#7f8c8d' }}>
                 Added: {formatDateTime(tracking.createdAt)}

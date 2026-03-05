@@ -51,42 +51,36 @@ public class MockDataService {
         ));
 
         userTrackings.add(Map.of(
-            "trackingId", 1,
-            "type", "entity",
-            "entityId", 1,
-            "entityName", "Taylor Swift_backend",
-            "entityType", "CELEBRITY",
+            "trackingId", "1",
+            "callsign", "DAL8924",
+            "team", "Denver Nuggets (back-end)",
+            "category", "NBA",
+            "type", "team",
             "notificationEnabled", true,
             "createdAt", "2024-02-01T10:00:00"
         ));
 
         userTrackings.add(Map.of(
-            "trackingId", 2,
-            "type", "aircraft",
-            "aircraftId", 4,
-            "tailNumber", "N1KE",
-            "aircraftType", "Gulfstream G-V_backend",
+            "trackingId", "2",
+            "callsign", "DAL9001",
+            "team", "Dallas Cowboys (back-end)",
+            "category", "NFL",
+            "type", "team",
             "notificationEnabled", false,
             "createdAt", "2024-02-05T14:30:00"
         ));
 
         userTrackings.add(Map.of(
-            "trackingId", 3,
-            "type", "flight",
-            "flightNumber", "AF1_backend",
+            "trackingId", "3",
+            "callsign", "DAL8918",
+            "team", "Atlanta Hawks (back-end)",
+            "category", "NBA",
+            "type", "team",
             "notificationEnabled", true,
             "createdAt", "2024-02-10T08:15:00"
         ));
 
-        userTrackings.add(Map.of(
-            "trackingId", 4,
-            "type", "entity",
-            "entityId", 2,
-            "entityName", "Scott Swanson_backend",
-            "entityType", "TEACHING_FACULTY",
-            "notificationEnabled", true,
-            "createdAt", "2024-02-01T10:00:00"
-        ));
+
             // NBA Teams mock data
             teams.add(Map.of("team", "Atlanta Hawks", "callsign", "DAL8918", "category", "NBA"));
             teams.add(Map.of("team", "Boston Celtics", "callsign", "DAL8919", "category", "NBA"));
