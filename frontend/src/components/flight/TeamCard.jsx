@@ -33,6 +33,7 @@ function TeamCard({ team }) {
         // API returns an object with callsign as key
         statusData = response[team.callsign];
       }
+      console.log('Status data for', team.callsign, ':', statusData);
 
       if (statusData && statusData.is_flying) {
         // Navigate to flight details page
@@ -84,7 +85,7 @@ function TeamCard({ team }) {
       <div className="flight-info">
         <p><strong>Callsign:</strong> {team.callsign}</p>
       </div>
-
+      <FlightStatus status={team.status} />
       <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
         <button
           className="btn btn-primary"

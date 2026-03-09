@@ -71,7 +71,8 @@ function SearchPage() {
           results = allTeams.filter(team =>
             team.team.toLowerCase().includes(searchTerm) ||
             team.category.toLowerCase().includes(searchTerm) ||
-            team.callsign.toLowerCase().includes(searchTerm)
+            team.callsign.toLowerCase().includes(searchTerm) ||
+            team.status.toLowerCase().includes(searchTerm)
           );
         }
       }
