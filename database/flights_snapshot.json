@@ -11,60 +11,34 @@
                                   "team":  "Orlando Magic",
                                   "callsign":  "DAL8937",
                                   "is_flying":  false,
-                                  "last_seen":  null,
-                                  "raw":  null
-                              },
-                  "DAL8926":  {
-                                  "team":  "Golden State Warriors",
-                                  "callsign":  "DAL8926",
-                                  "is_flying":  false,
-                                  "last_seen":  null,
-                                  "raw":  null
-                              },
-                  "DAL8920":  {
-                                  "team":  "Brooklyn Nets",
-                                  "callsign":  "DAL8920",
-                                  "is_flying":  false,
-                                  "last_seen":  1772486304002,
+                                  "last_seen":  1772832466001,
                                   "raw":  {
                                               "ac":  [
                                                          {
-                                                             "hex":  "a8bbff",
+                                                             "hex":  "a8bfb6",
                                                              "type":  "adsb_icao",
-                                                             "flight":  "DAL8920 ",
-                                                             "r":  "N662DN",
+                                                             "flight":  "DAL8937 ",
+                                                             "r":  "N663DN",
                                                              "t":  "B752",
                                                              "desc":  "BOEING 757-200",
                                                              "ownOp":  "BANK OF UTAH TRUSTEE",
                                                              "year":  "1991",
-                                                             "alt_baro":  38000,
-                                                             "alt_geom":  39225,
-                                                             "gs":  454.0,
-                                                             "ias":  253,
-                                                             "tas":  456,
-                                                             "mach":  0.800,
-                                                             "wd":  275,
-                                                             "ws":  34,
-                                                             "oat":  -59,
-                                                             "tat":  -32,
-                                                             "track":  186.58,
-                                                             "track_rate":  0.00,
-                                                             "roll":  0.18,
-                                                             "mag_heading":  199.16,
-                                                             "true_heading":  190.87,
-                                                             "baro_rate":  0,
-                                                             "geom_rate":  0,
-                                                             "squawk":  "1720",
+                                                             "alt_baro":  38775,
+                                                             "alt_geom":  39525,
+                                                             "gs":  457.6,
+                                                             "track":  329.68,
+                                                             "baro_rate":  1472,
+                                                             "squawk":  "2215",
                                                              "emergency":  "none",
                                                              "category":  "A4",
-                                                             "nav_qnh":  1013.6,
-                                                             "nav_altitude_mcp":  38016,
-                                                             "nav_heading":  208.12,
-                                                             "lat":  28.413986,
-                                                             "lon":  -79.025398,
+                                                             "nav_qnh":  1012.8,
+                                                             "nav_altitude_mcp":  40000,
+                                                             "nav_heading":  334.69,
+                                                             "lat":  40.045166,
+                                                             "lon":  -90.701689,
                                                              "nic":  8,
                                                              "rc":  186,
-                                                             "seen_pos":  0.436,
+                                                             "seen_pos":  0.219,
                                                              "version":  2,
                                                              "nic_baro":  1,
                                                              "nac_p":  10,
@@ -81,22 +55,89 @@
                                                              "tisb":  [
 
                                                                       ],
-                                                             "messages":  123787,
+                                                             "messages":  146142,
                                                              "seen":  0.0,
-                                                             "rssi":  -19.1
+                                                             "rssi":  -17.1
                                                          }
                                                      ],
                                               "msg":  "No error",
-                                              "now":  1772486304002,
+                                              "now":  1772832466001,
                                               "total":  1,
-                                              "ctime":  1772486304002,
+                                              "ctime":  1772832466001,
+                                              "ptime":  0
+                                          }
+                              },
+                  "DAL8926":  {
+                                  "team":  "Golden State Warriors",
+                                  "callsign":  "DAL8926",
+                                  "is_flying":  false,
+                                  "last_seen":  null,
+                                  "raw":  null
+                              },
+                  "DAL8920":  {
+                                  "team":  "Brooklyn Nets",
+                                  "callsign":  "DAL8920",
+                                  "is_flying":  false,
+                                  "last_seen":  1772832207002,
+                                  "raw":  {
+                                              "ac":  [
+                                                         {
+                                                             "hex":  "a89bec",
+                                                             "type":  "adsb_icao",
+                                                             "flight":  "DAL8920 ",
+                                                             "r":  "N654DL",
+                                                             "t":  "B752",
+                                                             "desc":  "BOEING 757-200",
+                                                             "ownOp":  "BANK OF UTAH TRUSTEE",
+                                                             "year":  "1990",
+                                                             "alt_baro":  30000,
+                                                             "alt_geom":  30800,
+                                                             "gs":  466.0,
+                                                             "track":  334.04,
+                                                             "baro_rate":  0,
+                                                             "squawk":  "2033",
+                                                             "emergency":  "none",
+                                                             "category":  "A4",
+                                                             "nav_qnh":  1013.6,
+                                                             "nav_altitude_mcp":  24000,
+                                                             "nav_heading":  340.31,
+                                                             "lat":  40.901588,
+                                                             "lon":  -82.251081,
+                                                             "nic":  8,
+                                                             "rc":  186,
+                                                             "seen_pos":  0.401,
+                                                             "version":  2,
+                                                             "nic_baro":  1,
+                                                             "nac_p":  10,
+                                                             "nac_v":  2,
+                                                             "sil":  3,
+                                                             "sil_type":  "perhour",
+                                                             "gva":  2,
+                                                             "sda":  2,
+                                                             "alert":  0,
+                                                             "spi":  0,
+                                                             "mlat":  [
+
+                                                                      ],
+                                                             "tisb":  [
+
+                                                                      ],
+                                                             "messages":  168541,
+                                                             "seen":  0.0,
+                                                             "rssi":  -18.8
+                                                         }
+                                                     ],
+                                              "msg":  "No error",
+                                              "now":  1772832207002,
+                                              "total":  1,
+                                              "ctime":  1772832207002,
                                               "ptime":  0
                                           }
                               },
                   "DAL8918":  {
                                   "team":  "Atlanta Hawks",
                                   "callsign":  "DAL8918",
-                                  "is_flying":  true,
+                                  "is_flying":  false,
                                   "last_seen":  1772571363001,
                                   "raw":  {
                                               "ac":  [
@@ -160,12 +201,65 @@
                                   "last_seen":  null,
                                   "raw":  null
                               },
-                  "DAL8928":  {
-                                  "team":  "Los Angeles Clippers",
-                                  "callsign":  "DAL8928",
+                  "DAL8927":  {
+                                  "team":  "Indiana Pacers",
+                                  "callsign":  "DAL8927",
                                   "is_flying":  false,
-                                  "last_seen":  null,
-                                  "raw":  null
+                                  "last_seen":  1773035818002,
+                                  "raw":  {
+                                              "ac":  [
+                                                         {
+                                                             "hex":  "a8947e",
+                                                             "type":  "adsb_icao",
+                                                             "flight":  "DAL8927 ",
+                                                             "r":  "N652DL",
+                                                             "t":  "B752",
+                                                             "desc":  "BOEING 757-200",
+                                                             "ownOp":  "BANK OF UTAH TRUSTEE",
+                                                             "year":  "1989",
+                                                             "alt_baro":  35000,
+                                                             "alt_geom":  35600,
+                                                             "gs":  473.0,
+                                                             "track":  179.76,
+                                                             "baro_rate":  0,
+                                                             "squawk":  "1650",
+                                                             "emergency":  "none",
+                                                             "category":  "A4",
+                                                             "nav_qnh":  1013.6,
+                                                             "nav_altitude_mcp":  35008,
+                                                             "nav_heading":  175.08,
+                                                             "lat":  41.316513,
+                                                             "lon":  -121.723389,
+                                                             "nic":  8,
+                                                             "rc":  186,
+                                                             "seen_pos":  0.164,
+                                                             "version":  2,
+                                                             "nic_baro":  1,
+                                                             "nac_p":  10,
+                                                             "nac_v":  2,
+                                                             "sil":  3,
+                                                             "sil_type":  "perhour",
+                                                             "gva":  2,
+                                                             "sda":  2,
+                                                             "alert":  0,
+                                                             "spi":  0,
+                                                             "mlat":  [
+
+                                                                      ],
+                                                             "tisb":  [
+
+                                                                      ],
+                                                             "messages":  47192,
+                                                             "seen":  0.0,
+                                                             "rssi":  -22.5
+                                                         }
+                                                     ],
+                                              "msg":  "No error",
+                                              "now":  1773035818002,
+                                              "total":  1,
+                                              "ctime":  1773035818002,
+                                              "ptime":  0
+                                          }
                               },
                   "DAL8941":  {
                                   "team":  "Sacramento Kings",
@@ -233,6 +327,13 @@
                   "DAL8935":  {
                                   "team":  "New York Knicks",
                                   "callsign":  "DAL8935",
+                                  "is_flying":  false,
+                                  "last_seen":  null,
+                                  "raw":  null
+                              },
+                  "DAL8928":  {
+                                  "team":  "Los Angeles Clippers",
+                                  "callsign":  "DAL8928",
                                   "is_flying":  false,
                                   "last_seen":  null,
                                   "raw":  null
@@ -359,65 +460,12 @@
                                               "ptime":  0
                                           }
                               },
-                  "DAL8927":  {
-                                  "team":  "Indiana Pacers",
-                                  "callsign":  "DAL8927",
-                                  "is_flying":  true,
-                                  "last_seen":  1772571455001,
-                                  "raw":  {
-                                              "ac":  [
-                                                         {
-                                                             "hex":  "a8947e",
-                                                             "type":  "adsb_icao",
-                                                             "flight":  "DAL8927 ",
-                                                             "r":  "N652DL",
-                                                             "t":  "B752",
-                                                             "desc":  "BOEING 757-200",
-                                                             "ownOp":  "BANK OF UTAH TRUSTEE",
-                                                             "year":  "1989",
-                                                             "alt_baro":  35950,
-                                                             "alt_geom":  36650,
-                                                             "gs":  377.2,
-                                                             "track":  254.78,
-                                                             "baro_rate":  0,
-                                                             "squawk":  "4020",
-                                                             "emergency":  "none",
-                                                             "category":  "A4",
-                                                             "nav_qnh":  1013.6,
-                                                             "nav_altitude_mcp":  36000,
-                                                             "nav_heading":  258.05,
-                                                             "lat":  37.999288,
-                                                             "lon":  -96.435122,
-                                                             "nic":  8,
-                                                             "rc":  186,
-                                                             "seen_pos":  0.410,
-                                                             "version":  2,
-                                                             "nic_baro":  1,
-                                                             "nac_p":  10,
-                                                             "nac_v":  2,
-                                                             "sil":  3,
-                                                             "sil_type":  "perhour",
-                                                             "gva":  2,
-                                                             "sda":  2,
-                                                             "alert":  0,
-                                                             "spi":  0,
-                                                             "mlat":  [
-
-                                                                      ],
-                                                             "tisb":  [
-
-                                                                      ],
-                                                             "messages":  108924,
-                                                             "seen":  0.0,
-                                                             "rssi":  -19.0
-                                                         }
-                                                     ],
-                                              "msg":  "No error",
-                                              "now":  1772571455001,
-                                              "total":  1,
-                                              "ctime":  1772571455001,
-                                              "ptime":  0
-                                          }
+                  "DAL8934":  {
+                                  "team":  "New Orleans Pelicans",
+                                  "callsign":  "DAL8934",
+                                  "is_flying":  false,
+                                  "last_seen":  null,
+                                  "raw":  null
                               },
                   "DAL8925":  {
                                   "team":  "Detroit Pistons",
@@ -560,13 +608,6 @@
                                   "last_seen":  null,
                                   "raw":  null
                               },
-                  "DAL8934":  {
-                                  "team":  "New Orleans Pelicans",
-                                  "callsign":  "DAL8934",
-                                  "is_flying":  false,
-                                  "last_seen":  null,
-                                  "raw":  null
-                              },
                   "DAL8940":  {
                                   "team":  "Portland Trail Blazers",
                                   "callsign":  "DAL8940",
@@ -582,5 +623,5 @@
                                   "raw":  null
                               }
               },
-    "snapshot_time":  1772550039000
+    "snapshot_time":  1773157320000
 }

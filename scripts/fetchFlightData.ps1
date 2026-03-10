@@ -1,16 +1,20 @@
 # NBA Charter Flight Data Collection
 # Fetches live ADS-B data from Airplanes.live for each team in database/teams.json
 # and writes results to database/flights_snapshot.json. Rate limit: 15s between requests; retries on 429.
+# Logs one line per run to database/flight_refresh.log with per-team status updates.
 
 $ErrorActionPreference = "Continue"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $DatabaseDir = Join-Path $ScriptDir "..\database"
 $TeamsPath = Join-Path $DatabaseDir "teams.json"
 $SnapshotPath = Join-Path $DatabaseDir "flights_snapshot.json"
+$LogPath = Join-Path $DatabaseDir "flight_refresh.log"
 $ApiBase = "http://api.airplanes.live/v2/callsign"
-$DelaySeconds = 15
-$RetryWaitSeconds = 90
+$DelaySeconds = 10
+$RetryWaitSeconds = 45
 $MaxRetries = 2
+
+$logLines = @()
 
 $teamsData = Get-Content $TeamsPath -Raw | ConvertFrom-Json
 $teams = @($teamsData.teams)
@@ -50,6 +54,7 @@ foreach ($t in $teams) {
             $total = if ($null -eq $data.total) { 0 } else { $data.total }
 
             if ($total -eq 1) {
+                $wasFlying = $existing -and $existing.is_flying -eq $true
                 $ts = if ($null -ne $data.now) { $data.now } elseif ($null -ne $data.ctime) { $data.ctime } else { [long](Get-Date -UFormat %s) * 1000 }
                 $teamsMap[$callsign] = [PSCustomObject]@{
                     team      = $team
@@ -58,9 +63,15 @@ foreach ($t in $teams) {
                     last_seen = $ts
                     raw       = $data
                 }
+                if ($wasFlying) {
+                    $logLines += "$team updated flying position"
+                } else {
+                    $logLines += "$team now flying"
+                }
                 Write-Host "[$i/$($teams.Count)] $team ($callsign): flying - updated"
             } else {
                 if ($existing) {
+                    $wasFlying = $existing.is_flying -eq $true
                     $teamsMap[$callsign] = [PSCustomObject]@{
                         team      = $team
                         callsign  = $callsign
@@ -105,4 +116,11 @@ foreach ($t in $teams) {
 $snapshotTime = [long](Get-Date -UFormat %s) * 1000
 $output = @{ snapshot_time = $snapshotTime; teams = $teamsMap }
 $output | ConvertTo-Json -Depth 20 | Set-Content $SnapshotPath -Encoding UTF8
+$ts = Get-Date -Format "MM/dd/yyyy HH:mm"
+if ($logLines.Count -gt 0) {
+    $msg = "$ts " + ($logLines -join ". ") + "."
+} else {
+    $msg = "$ts No teams currently flying."
+}
+$msg | Add-Content -Path $LogPath -Encoding UTF8 -ErrorAction SilentlyContinue
 Write-Host "`nSaved to $SnapshotPath"
