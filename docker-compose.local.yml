@@ -1,0 +1,21 @@
+# Local development override.
+# Usage: docker compose --env-file .env.local -f docker-compose.yml -f docker-compose.local.yml up -d
+# Copy .env.local.example to .env.local and set your dev values.
+
+services:
+  mysql:
+    env_file: .env.local
+    ports:
+      - "3306:3306"
+
+  backend:
+    env_file: .env.local
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
