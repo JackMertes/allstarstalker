@@ -1,6 +1,7 @@
 package com.university.backend;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "teams")
@@ -28,8 +29,11 @@ public class Team {
     @Column(length = 40)
     private String division;
 
-    @Column(length = 16)
-    private String callsign;
+    @Column(name = "created_at", insertable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
+    private LocalDateTime updatedAt;
 
     public Long getId() {
         return id;
@@ -87,11 +91,11 @@ public class Team {
         this.division = division;
     }
 
-    public String getCallsign() {
-        return callsign;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCallsign(String callsign) {
-        this.callsign = callsign;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 }
