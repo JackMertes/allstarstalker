@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/**
+ * REST endpoints for triggering flight data ingestion from Airplanes.live.
+ */
 @RestController
 @RequestMapping("/api/ingest")
 public class IngestController {
@@ -32,7 +35,7 @@ public class IngestController {
 
     /**
      * Triggers a full refresh of all teams in the background. Returns immediately with 202.
-     * 10s delay between each; 429 retries with 60s wait.
+     * 12s delay between each team; 429 retries with 60s wait.
      * Returns 409 if a refresh is already in progress.
      */
     @PostMapping("/refresh-all")

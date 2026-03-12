@@ -14,12 +14,18 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Fetches live ADS-B data from Airplanes.live by callsign.
+ * Retries on 429 rate limit (60s wait, up to 2 retries).
+ */
 @Service
 public class AirplanesLiveClient {
 
     private static final Logger log = LoggerFactory.getLogger(AirplanesLiveClient.class);
     private static final String BASE_URL = "https://api.airplanes.live/v2/callsign";
+    /** Max retries on 429; total attempts = 1 + MAX_RETRIES */
     private static final int MAX_RETRIES = 2;
+    /** Wait time (ms) before retrying after 429 */
     private static final long RETRY_DELAY_MS = 60_000;
 
     private final RestTemplate restTemplate;
@@ -45,12 +51,14 @@ public class AirplanesLiveClient {
         int attempts = 0;
         while (true) {
             try {
+                // GET https://api.airplanes.live/v2/callsign/{callsign}
                 ResponseEntity<AirplanesLiveResponse> response = restTemplate.getForEntity(
                         URI.create(url),
                         AirplanesLiveResponse.class
                 );
                 return response.getBody();
             } catch (RestClientException e) {
+                // 429 Too Many Requests: retry after delay
                 if (e instanceof HttpStatusCodeException ex && ex.getStatusCode().value() == 429
                         && attempts < MAX_RETRIES) {
                     attempts++;
@@ -63,6 +71,7 @@ public class AirplanesLiveClient {
                         return null;
                     }
                 } else {
+                    // Non-429 or exhausted retries: give up and return null
                     String msg = e instanceof HttpStatusCodeException ex ? ex.getStatusCode() + " " + ex.getStatusText() : e.getMessage();
                     log.warn("Airplanes.live error for {}: {} - returning null", callsign, msg);
                     return null;

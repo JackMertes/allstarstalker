@@ -20,16 +20,22 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Refreshes flight data from Airplanes.live for NBA team charter flights.
+ * Supports one-team and full refresh, with rate limiting and flight_refresh.log output.
+ */
 @Service
 public class FlightRefreshService {
 
     private static final Logger log = LoggerFactory.getLogger(FlightRefreshService.class);
-
+    /** Timestamp format for flight_refresh.log (matches PS script: "03/10/2026 3:42 PM") */
     private static final DateTimeFormatter LOG_TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("MM/dd/yyyy h:mm a");
 
+    /** Prevents overlapping full refreshes; only one can run at a time */
     private final AtomicBoolean refreshAllInProgress = new AtomicBoolean(false);
     private final AirplanesLiveClient airplanesLiveClient;
     private final FlightRepository flightRepository;
@@ -117,6 +123,7 @@ public class FlightRefreshService {
         }
     }
 
+    /** API returns total=1 and non-empty aircraft list when plane is in the air */
     private boolean isFlying(AirplanesLiveResponse response) {
         if (response == null) return false;
         Integer total = response.getTotal();
@@ -125,6 +132,7 @@ public class FlightRefreshService {
         return ac != null && !ac.isEmpty();
     }
 
+    /** Maps Airplanes.live response to Flight entity; reuses existing if present */
     private Flight mapToFlight(String teamName, String callsign, AirplanesLiveResponse response, Flight existing) {
         Flight flight = existing != null ? existing : new Flight();
         flight.setCallsign(callsign);
@@ -149,8 +157,8 @@ public class FlightRefreshService {
     }
 
     /**
-     * Refreshes all teams with callsigns. Waits {@code ingestion.delay-between-teams-ms} (default 10s)
-     * between each team to respect rate limits. Only one full refresh can run at a time.
+     * Refreshes all teams with callsigns. Waits between each team (ingestion.delay-between-teams-ms)
+     * to respect rate limits. Only one full refresh can run at a time.
      *
      * @return number of teams refreshed, or -1 if a refresh is already in progress
      */
@@ -195,8 +203,37 @@ public class FlightRefreshService {
         return teamRepository.findByCallsignIsNotNull().size();
     }
 
-    private List<String> runRefreshLoop() {
-        List<Team> teams = teamRepository.findByCallsignIsNotNull();
+    /**
+     * Refreshes only teams with ACTIVE flights. Used by the 10-min scheduler.
+     * Uses same 12s delay between teams as full refresh. Appends to flight_refresh.log.
+     * Skips if a full refresh is already in progress (teams will be refreshed anyway).
+     */
+    public void refreshFlyingTeams() {
+        if (refreshAllInProgress.get()) {
+            log.debug("Flying refresh skipped - full refresh in progress");
+            return;
+        }
+        List<Flight> activeFlights = flightRepository.findByStatus("ACTIVE");
+        List<Team> teamsToRefresh = activeFlights.stream()
+                .map(Flight::getCallsign)
+                .distinct()
+                .map(teamRepository::findByCallsign)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+        if (teamsToRefresh.isEmpty()) {
+            log.info("Flying refresh: no ACTIVE flights, skipping");
+            appendToLogFile(List.of());
+            return;
+        }
+        log.info("Flying refresh started for {} teams", teamsToRefresh.size());
+        List<String> logLines = refreshTeamsWithDelay(teamsToRefresh);
+        appendToLogFile(logLines);
+        log.info("Flying refresh completed for {} teams", teamsToRefresh.size());
+    }
+
+    /** Refreshes given teams with delay between each (ingestion.delay-between-teams-ms). Returns flying-team log lines. */
+    private List<String> refreshTeamsWithDelay(List<Team> teams) {
         int count = teams.size();
         List<String> logLines = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -213,11 +250,32 @@ public class FlightRefreshService {
         return logLines;
     }
 
+    /** Loops over all teams, refreshes each, collects flying-team log lines. Waits between teams for rate limiting. */
+    private List<String> runRefreshLoop() {
+        List<Team> teams = teamRepository.findByCallsignIsNotNull();
+        int count = teams.size();
+        List<String> logLines = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            refreshOneTeamWithLogLine(teams.get(i), i + 1, count).ifPresent(logLines::add);
+            // Rate limit: wait between teams (except after last)
+            if (i < count - 1 && delayBetweenTeamsMs > 0) {
+                try {
+                    Thread.sleep(delayBetweenTeamsMs);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+        return logLines;
+    }
+
+    /** Appends one line to flight_refresh.log: timestamp + flying teams or "No teams currently flying" */
     private void appendToLogFile(List<String> logLines) {
         try {
             String ts = LocalDateTime.now().format(LOG_TIMESTAMP_FORMAT);
             String content = logLines.isEmpty() ? "No teams currently flying" : String.join(". ", logLines);
-            String line = ts + " " + content + ".";
+            String line = ts + " " + content + ".";  // e.g. "03/10/2026 3:42 PM Memphis Grizzlies now flying."
             Path path = Paths.get(logPath);
             Path parent = path.getParent();
             if (parent != null) {
