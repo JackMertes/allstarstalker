@@ -29,8 +29,13 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      # Backend writes flight_refresh.log here; host sees it in ./database/
+      INGESTION_LOG_PATH: /app/database/flight_refresh.log
     ports:
       - "8080:8080"
+    volumes:
+      # Mount database dir so backend can write flight_refresh.log to host
+      - ./database:/app/database
     depends_on:
       mysql:
         condition: service_healthy
