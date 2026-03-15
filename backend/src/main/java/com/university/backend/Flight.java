@@ -16,10 +16,10 @@ public class Flight {
     @Column(name = "external_flight_id", length = 64)
     private String externalFlightId;
 
-    @Column(name = "flight_date")
+    @Transient
     private LocalDate flightDate;
 
-    @Column(name = "flight_status_raw", length = 16)
+    @Transient
     private String flightStatusRaw;
 
     @Column(name = "tail_number", length = 16)
@@ -31,61 +31,70 @@ public class Flight {
     @Column(name = "airline_icao", length = 3)
     private String airlineIcao;
 
-    @Column(name = "airline_iata", length = 2)
+    @Transient
     private String airlineIata;
 
     @Column(name = "flight_number", length = 16)
     private String flightNumber;
 
-    @Column(name = "flight_iata", length = 16)
+    @Transient
     private String flightIata;
 
-    @Column(name = "flight_icao", length = 16)
+    @Transient
     private String flightIcao;
 
     @Column(name = "aircraft_type", length = 16)
     private String aircraftType;
 
-    @Column(name = "departure_airport_id", nullable = false)
+    @Column(name = "departure_airport_id")
     private Long departureAirportId;
 
-    @Column(name = "arrival_airport_id", nullable = false)
+    @Column(name = "arrival_airport_id")
     private Long arrivalAirportId;
 
-    @Column(name = "departure_scheduled_utc")
+    @Column(name = "scheduled_departure_utc")
     private LocalDateTime departureScheduledUtc;
 
-    @Column(name = "arrival_scheduled_utc")
+    @Column(name = "scheduled_arrival_utc")
     private LocalDateTime arrivalScheduledUtc;
 
-    @Column(length = 16)
+    @Column(name = "status", columnDefinition = "ENUM('SCHEDULED','ACTIVE','LANDED','CANCELLED','DIVERTED','UNKNOWN')")
     private String status;
 
-    @Column(name = "total_flight_time_min")
+    @Column(name = "duration_minutes")
     private Integer totalFlightTimeMin;
 
     @Column(name = "live_updated_utc")
     private LocalDateTime liveUpdatedUtc;
 
-    @Column(name = "live_latitude", precision = 9, scale = 6)
+    @Column(name = "live_latitude", columnDefinition = "DECIMAL(9,6)")
     private BigDecimal liveLatitude;
 
-    @Column(name = "live_longitude", precision = 9, scale = 6)
+    @Column(name = "live_longitude", columnDefinition = "DECIMAL(9,6)")
     private BigDecimal liveLongitude;
 
-    @Column(name = "live_altitude_m", precision = 10, scale = 3)
+    @Transient
     private BigDecimal liveAltitudeM;
 
-    @Column(name = "max_altitude_m", precision = 10, scale = 3)
+    @Transient
     private BigDecimal maxAltitudeM;
 
     @Column(name = "last_seen_utc")
     private LocalDateTime lastSeenUtc;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @Column(name = "live_altitude_ft")
+    private Integer liveAltitudeFt;
+
+    @Column(name = "live_ground_speed_kt", columnDefinition = "DECIMAL(8,1)")
+    private BigDecimal liveGroundSpeedKt;
+
+    @Column(name = "live_heading_deg", columnDefinition = "DECIMAL(6,2)")
+    private BigDecimal liveHeadingDeg;
+
+    @Transient
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", insertable = false, updatable = false)
+    @Transient
     private LocalDateTime updatedAt;
 
     public Long getId() {
@@ -278,6 +287,30 @@ public class Flight {
 
     public void setLastSeenUtc(LocalDateTime lastSeenUtc) {
         this.lastSeenUtc = lastSeenUtc;
+    }
+
+    public Integer getLiveAltitudeFt() {
+        return liveAltitudeFt;
+    }
+
+    public void setLiveAltitudeFt(Integer liveAltitudeFt) {
+        this.liveAltitudeFt = liveAltitudeFt;
+    }
+
+    public BigDecimal getLiveGroundSpeedKt() {
+        return liveGroundSpeedKt;
+    }
+
+    public void setLiveGroundSpeedKt(BigDecimal liveGroundSpeedKt) {
+        this.liveGroundSpeedKt = liveGroundSpeedKt;
+    }
+
+    public BigDecimal getLiveHeadingDeg() {
+        return liveHeadingDeg;
+    }
+
+    public void setLiveHeadingDeg(BigDecimal liveHeadingDeg) {
+        this.liveHeadingDeg = liveHeadingDeg;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -26,10 +26,10 @@ public class TeamFlight {
     private Flight flight;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
+    @Column(name = "role", columnDefinition = "ENUM('TEAM_CHARTER','SHARED_CHARTER','UNKNOWN')")
     private Role role = Role.TEAM_CHARTER;
 
-    @Column
+    @Column(columnDefinition = "TINYINT UNSIGNED")
     private Short confidence;
 
     public TeamFlight() {

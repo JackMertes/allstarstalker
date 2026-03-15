@@ -23,11 +23,14 @@ public class Team {
     @Column(nullable = false, length = 80)
     private String city;
 
-    @Column(length = 32)
+    @Column(name = "conference", columnDefinition = "ENUM('East','West')")
     private String conference;
 
     @Column(length = 40)
     private String division;
+
+    @Column(length = 16)
+    private String callsign;
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -89,6 +92,14 @@ public class Team {
 
     public void setDivision(String division) {
         this.division = division;
+    }
+
+    public String getCallsign() {
+        return callsign;
+    }
+
+    public void setCallsign(String callsign) {
+        this.callsign = callsign;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -13,7 +13,7 @@ public class Airport {
     @Column(name = "iata_code", nullable = false, length = 3, unique = true)
     private String iataCode;
 
-    @Column(name = "icao_code", length = 4, unique = true)
+    @Column(name = "icao_code", length = 4)
     private String icaoCode;
 
     @Column(length = 120)
@@ -28,10 +28,10 @@ public class Airport {
     @Column(length = 80)
     private String country;
 
-    @Column(precision = 9, scale = 6)
+    @Column(name = "latitude", columnDefinition = "DECIMAL(9,6)")
     private Double latitude;
 
-    @Column(precision = 9, scale = 6)
+    @Column(name = "longitude", columnDefinition = "DECIMAL(9,6)")
     private Double longitude;
 
     @Column(length = 64)
