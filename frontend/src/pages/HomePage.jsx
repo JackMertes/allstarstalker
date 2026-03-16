@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import teamService from '../services/teamService';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { TeamGridSkeleton } from '../components/common/TeamCardSkeleton';
 import { TeamCard } from '../components/flight';
 import { mockTeams } from '../utils/mockData';
+import { useCountUp } from '../hooks/useCountUp';
 import logo from '../assets/logo.png';
 
-// Toggle to false when backend is ready
+const BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
 const USE_MOCK = false;
 
-// Animated flight path dots floating across the hero
+// ── Animated floating dots on hero ───────────────────────────────────────────
 function FlightDots() {
   const dots = [
-    { top: '20%', left: '5%',  delay: '0s',    dur: '8s'  },
-    { top: '60%', left: '15%', delay: '1.5s',  dur: '10s' },
-    { top: '35%', left: '30%', delay: '3s',    dur: '7s'  },
-    { top: '75%', left: '50%', delay: '0.8s',  dur: '9s'  },
-    { top: '15%', left: '65%', delay: '2.2s',  dur: '6s'  },
-    { top: '50%', left: '80%', delay: '4s',    dur: '11s' },
+    { top: '20%', left: '5%',  delay: '0s',   dur: '8s'  },
+    { top: '60%', left: '15%', delay: '1.5s', dur: '10s' },
+    { top: '35%', left: '30%', delay: '3s',   dur: '7s'  },
+    { top: '75%', left: '50%', delay: '0.8s', dur: '9s'  },
+    { top: '15%', left: '65%', delay: '2.2s', dur: '6s'  },
+    { top: '50%', left: '80%', delay: '4s',   dur: '11s' },
   ];
   return (
     <>
@@ -31,13 +31,19 @@ function FlightDots() {
           0%, 100% { box-shadow: 0 0 0 3px rgba(239,68,68,0.3); }
           50%       { box-shadow: 0 0 0 7px rgba(239,68,68,0.1); }
         }
+        @keyframes pulseGreen {
+          0%, 100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.3); }
+          50%       { box-shadow: 0 0 0 7px rgba(34,197,94,0.1); }
+        }
+        @keyframes floatPlane {
+          0%, 100% { opacity: 0.35; transform: translateY(0); }
+          50%       { opacity: 0.5;  transform: translateY(-6px); }
+        }
       `}</style>
       {dots.map((d, i) => (
         <div key={i} style={{
-          position: 'absolute',
-          top: d.top, left: d.left,
-          width: '5px', height: '5px',
-          borderRadius: '50%',
+          position: 'absolute', top: d.top, left: d.left,
+          width: 5, height: 5, borderRadius: '50%',
           background: 'rgba(251,191,36,0.55)',
           animation: `floatDot ${d.dur} ease-in-out ${d.delay} infinite`,
           pointerEvents: 'none',
@@ -47,18 +53,21 @@ function FlightDots() {
   );
 }
 
+// ── Animated stat pill ────────────────────────────────────────────────────────
 function StatPill({ icon, value, label }) {
+  const { value: displayed, ref } = useCountUp(value, 1400);
   return (
-    <div style={S.statPill}>
-      <span style={{ fontSize: '20px' }}>{icon}</span>
+    <div ref={ref} style={S.statPill}>
+      <span style={{ fontSize: 20 }}>{icon}</span>
       <div>
-        <div style={S.statValue}>{value}</div>
+        <div style={S.statValue}>{displayed}</div>
         <div style={S.statLabel}>{label}</div>
       </div>
     </div>
   );
 }
 
+// ── Feature block ─────────────────────────────────────────────────────────────
 function FeatureBlock({ icon, title, desc, accent }) {
   const [hov, setHov] = useState(false);
   return (
@@ -68,38 +77,54 @@ function FeatureBlock({ icon, title, desc, accent }) {
       onMouseLeave={() => setHov(false)}
     >
       <div style={{ ...S.featureBar, background: accent }} />
-      <span style={{ fontSize: '28px', marginBottom: '12px', display: 'block' }}>{icon}</span>
+      <span style={{ fontSize: 28, marginBottom: 12, display: 'block' }}>{icon}</span>
       <h3 style={S.featureTitle}>{title}</h3>
       <p style={S.featureDesc}>{desc}</p>
     </div>
   );
 }
 
+// ── Live dot ──────────────────────────────────────────────────────────────────
+function LiveDot({ green }) {
+  return (
+    <span style={{
+      display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
+      background: green ? '#22c55e' : '#ef4444',
+      marginRight: 8, flexShrink: 0,
+      animation: green ? 'pulseGreen 1.5s ease-in-out infinite' : 'pulseRed 1.5s ease-in-out infinite',
+    }} />
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 function HomePage() {
-  const [teams, setTeams]     = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [flyingTeams,   setFlyingTeams]   = useState([]);
+  const [flyingLoading, setFlyingLoading] = useState(true);
 
-  useEffect(() => { fetchTeams(); }, []);
+  useEffect(() => { fetchFlyingTeams(); }, []);
 
-  const fetchTeams = async () => {
-    setLoading(true);
+  const fetchFlyingTeams = async () => {
+    setFlyingLoading(true);
     try {
-      const all = USE_MOCK
-        ? mockTeams.slice(0, 6)
-        : (await teamService.getAllTeams()).slice(0, 6);
-      setTeams(all);
-    } catch (e) {
-      console.error('Failed to fetch teams:', e);
-      setTeams(mockTeams.slice(0, 6));
+      if (USE_MOCK) {
+        const flying = mockTeams.filter(t => ['DAL8924', 'DAL8920'].includes(t.callsign));
+        setFlyingTeams(flying);
+      } else {
+        const res = await fetch(`${BASE}/teams/flying`);
+        const data = await res.json();
+        setFlyingTeams(Array.isArray(data) ? data : []);
+      }
+    } catch {
+      setFlyingTeams([]);
     } finally {
-      setLoading(false);
+      setFlyingLoading(false);
     }
   };
 
   return (
     <div>
 
-      {/* ── HERO ────────────────────────────────────────────── */}
+      {/* ── HERO ─────────────────────────────────────────────── */}
       <div style={S.hero}>
         <div style={S.grid} />
         <div style={S.ring1} />
@@ -107,15 +132,9 @@ function HomePage() {
         <FlightDots />
 
         <div style={S.heroInner}>
-
-          {/* Left: text + CTA */}
           <div style={S.heroLeft}>
             <div style={S.liveBadge}>
-              <span style={{
-                display: 'inline-block', width: 7, height: 7, borderRadius: '50%',
-                background: '#ef4444', marginRight: 8,
-                animation: 'pulseRed 1.5s ease-in-out infinite',
-              }} />
+              <LiveDot />
               LIVE TRACKING
             </div>
 
@@ -133,80 +152,92 @@ function HomePage() {
               <Link to="/tracking" style={S.ctaGhost}>My Tracking</Link>
             </div>
 
+            {/* Animated stat pills */}
             <div style={S.statsRow}>
-              <StatPill icon="🏀" value="1"     label="League"   />
-              <StatPill icon="✈️" value="28"  label="Teams"    />
-              <StatPill icon="📍" value="Live"  label="Tracking" />
+              <StatPill icon="🏀" value={1}    label="League"   />
+              <StatPill icon="✈️" value={28}   label="Teams"    />
+              <StatPill icon="📍" value="Live" label="Tracking" />
             </div>
           </div>
 
-          {/* Right: logo */}
           <div style={S.heroRight}>
             <div style={S.glowRing}>
               <img src={logo} alt="All Star Stalker" style={S.heroLogo} />
             </div>
             <span style={S.logoCaption}>ALL STAR STALKER</span>
           </div>
-
         </div>
       </div>
 
-      {/* ── LEAGUE TICKER ─────────────────────────────────── */}
+      {/* ── TICKER ───────────────────────────────────────────── */}
       <div style={S.ticker}>
         {['NBA','REAL-TIME FLIGHT DATA','NBA','REAL-TIME FLIGHT DATA','NBA','REAL-TIME FLIGHT DATA'].map((t, i) => (
           <React.Fragment key={i}>
             <span style={{ letterSpacing: '2px' }}>{t}</span>
-            <span style={{ color: '#FBBF24', fontSize: '18px', margin: '0 6px' }}>·</span>
+            <span style={{ color: '#FBBF24', fontSize: 18, margin: '0 6px' }}>·</span>
           </React.Fragment>
         ))}
       </div>
 
-      {/* ── FEATURES ──────────────────────────────────────── */}
+      {/* ── FEATURES ─────────────────────────────────────────── */}
       <div style={S.section}>
         <div style={S.eyebrow}>WHAT WE OFFER</div>
         <h2 style={S.sectionTitle}>Everything you need to<br />track team travel</h2>
         <div style={S.featGrid}>
-          <FeatureBlock icon="🔍" title="Team Search"        desc="Find any professional team by name, league, or flight callsign."               accent="#1D4ED8" />
-          <FeatureBlock icon="📍" title="Real-time Position" desc="Live map positions updated continuously — see exactly where they are."          accent="#C8102E" />
-          <FeatureBlock icon="✈️" title="Flight Status"      desc="Instantly know if a team is airborne, at the gate, or already landed."         accent="#FBBF24" />
-          <FeatureBlock icon="⭐" title="My Tracking List"   desc="Save favorites and get a personalised dashboard every time you visit."         accent="#22c55e" />
+          <FeatureBlock icon="🔍" title="Team Search"        desc="Find any professional team by name, league, or flight callsign."                    accent="#1D4ED8" />
+          <FeatureBlock icon="📍" title="Real-time Position" desc="Live map positions updated continuously — see exactly where they are."               accent="#C8102E" />
+          <FeatureBlock icon="✈️" title="Flight Status"      desc="Instantly know if a team is airborne, at the gate, or already landed."              accent="#FBBF24" />
+          <FeatureBlock icon="⭐" title="My Tracking List" desc="Save your favourite teams and get a personalised view of their flight status." accent="#22c55e" />
         </div>
       </div>
-
-      {/* ── FEATURED TEAMS ────────────────────────────────── */}
+      {/* ── TEAMS IN THE AIR ─────────────────────────────────── */}
       <div style={S.section}>
-        <div style={S.eyebrow}>TEAMS</div>
-        <h2 style={S.sectionTitle}>Featured Teams</h2>
-
-        {loading ? (
-          <LoadingSpinner message="Loading teams…" />
-        ) : teams.length > 0 ? (
-          <div style={S.teamsGrid}>
-            {teams.map((team, i) => <TeamCard key={team.callsign || i} team={team} />)}
-          </div>
-        ) : (
-          <p style={{ color: 'var(--runway-gray)', textAlign: 'center' }}>No teams available</p>
-        )}
-
-        <div style={{ textAlign: 'center', marginTop: '32px' }}>
-          <Link to="/search" style={S.viewAll}>View All Teams →</Link>
+        <div style={S.eyebrow}>
+          {!flyingLoading && flyingTeams.length > 0
+            ? <><LiveDot green /> LIVE NOW</>
+            : 'LIVE NOW'
+          }
         </div>
+        <h2 style={S.sectionTitle}>Teams In The Air</h2>
+
+        {flyingLoading ? (
+          <TeamGridSkeleton count={3} />
+        ) : flyingTeams.length > 0 ? (
+          <>
+            <div style={S.teamsGrid}>
+              {flyingTeams.map((team, i) => (
+                <TeamCard key={team.callsign || i} team={{ ...team, status: 'ACTIVE' }} />
+              ))}
+            </div>
+            <div style={{ textAlign: 'center', marginTop: 32 }}>
+              <Link to="/search" style={S.viewAll}>View All Teams →</Link>
+            </div>
+          </>
+        ) : (
+          <div style={S.emptyAir}>
+            <div style={{ fontSize: 56, animation: 'floatPlane 3s ease-in-out infinite' }}>✈️</div>
+            <h3 style={S.emptyTitle}>No teams currently in the air</h3>
+            <p style={S.emptyBody}>
+              Flight data refreshes every 10 minutes. Check back soon, or browse all teams below.
+            </p>
+            <Link to="/search" style={S.viewAll}>Browse All Teams →</Link>
+          </div>
+        )}
       </div>
 
     </div>
   );
 }
 
-/* ── Style map ──────────────────────────────────────────────── */
+/* ── Styles ──────────────────────────────────────────────────────────────────*/
 const S = {
   hero: {
     background: 'linear-gradient(135deg, #04091a 0%, #0B2545 50%, #0e3068 100%)',
-    borderRadius: '16px',
-    padding: 'clamp(40px, 6vw, 72px) clamp(24px, 5vw, 56px)',
-    marginBottom: 0,
+    borderRadius: 16,
+    padding: 'clamp(40px,6vw,72px) clamp(24px,5vw,56px)',
     position: 'relative',
     overflow: 'hidden',
-    minHeight: '460px',
+    minHeight: 460,
     display: 'flex',
     alignItems: 'center',
   },
@@ -217,149 +248,66 @@ const S = {
       'linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)',
     backgroundSize: '52px 52px',
   },
-  ring1: {
-    position: 'absolute', borderRadius: '50%',
-    width: '520px', height: '520px',
-    border: '1px solid rgba(251,191,36,0.07)',
-    top: '50%', right: '-100px',
-    transform: 'translateY(-50%)',
-    pointerEvents: 'none',
-  },
-  ring2: {
-    position: 'absolute', borderRadius: '50%',
-    width: '340px', height: '340px',
-    border: '1px solid rgba(251,191,36,0.13)',
-    top: '50%', right: '-10px',
-    transform: 'translateY(-50%)',
-    pointerEvents: 'none',
-  },
-  heroInner: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    width: '100%', gap: '40px', zIndex: 1, position: 'relative', flexWrap: 'wrap',
-  },
-  heroLeft:  { flex: 1, minWidth: '280px' },
-  heroRight: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' },
-
+  ring1: { position:'absolute', borderRadius:'50%', width:520, height:520, border:'1px solid rgba(251,191,36,0.07)', top:'50%', right:-100, transform:'translateY(-50%)', pointerEvents:'none' },
+  ring2: { position:'absolute', borderRadius:'50%', width:340, height:340, border:'1px solid rgba(251,191,36,0.13)', top:'50%', right:-10,  transform:'translateY(-50%)', pointerEvents:'none' },
+  heroInner: { position:'relative', zIndex:1, display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%', gap:40, flexWrap:'wrap' },
+  heroLeft:  { flex: '1 1 320px' },
+  heroRight: { flex:'0 0 auto', display:'flex', flexDirection:'column', alignItems:'center', gap:12 },
   liveBadge: {
     display: 'inline-flex', alignItems: 'center',
-    background: 'rgba(200,16,46,0.18)',
-    border: '1px solid rgba(200,16,46,0.45)',
-    color: '#ff8093',
-    padding: '5px 14px', borderRadius: '100px',
-    fontSize: '11px', fontWeight: '700', letterSpacing: '1.5px',
-    marginBottom: '20px',
+    background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)',
+    borderRadius: 999, padding: '6px 14px',
+    fontSize: 11, fontWeight: 700, letterSpacing: '2px', color: '#fca5a5', marginBottom: 20,
   },
-  heroTitle: {
-    fontSize: 'clamp(30px, 5vw, 52px)',
-    fontWeight: '900', color: '#fff',
-    lineHeight: '1.05', marginBottom: '16px', letterSpacing: '-0.8px',
-  },
+  heroTitle: { fontSize:'clamp(32px,5vw,52px)', fontWeight:900, color:'white', margin:'0 0 16px', lineHeight:1.1, letterSpacing:'-1px' },
   titleGold: { color: '#FBBF24' },
-  heroSub: {
-    fontSize: '15px', color: 'rgba(255,255,255,0.60)',
-    lineHeight: '1.65', marginBottom: '30px', maxWidth: '400px',
-  },
-  ctaRow: { display: 'flex', gap: '14px', flexWrap: 'wrap', marginBottom: '32px' },
+  heroSub:   { color:'rgba(255,255,255,0.7)', fontSize:'clamp(14px,2vw,17px)', lineHeight:1.6, margin:'0 0 28px', maxWidth:460 },
+  ctaRow:    { display:'flex', gap:12, flexWrap:'wrap', marginBottom:32 },
   ctaRed: {
-    background: '#C8102E', color: '#fff',
-    padding: '13px 26px', borderRadius: '8px',
-    textDecoration: 'none', fontWeight: '700', fontSize: '14px',
-    boxShadow: '0 4px 18px rgba(200,16,46,0.4)', letterSpacing: '0.3px',
+    background: 'linear-gradient(135deg,#C8102E,#a00d25)', color:'white',
+    padding:'14px 28px', borderRadius:10, textDecoration:'none', fontWeight:700, fontSize:15,
+    boxShadow:'0 4px 16px rgba(200,16,46,0.35)',
   },
   ctaGhost: {
-    background: 'rgba(255,255,255,0.07)',
-    border: '1.5px solid rgba(255,255,255,0.2)',
-    color: '#fff', padding: '13px 26px', borderRadius: '8px',
-    textDecoration: 'none', fontWeight: '700', fontSize: '14px',
+    background:'rgba(255,255,255,0.08)', color:'white', border:'1px solid rgba(255,255,255,0.2)',
+    padding:'14px 28px', borderRadius:10, textDecoration:'none', fontWeight:700, fontSize:15,
   },
-  statsRow: { display: 'flex', gap: '14px', flexWrap: 'wrap' },
+  statsRow: { display:'flex', gap:20, flexWrap:'wrap' },
   statPill: {
-    display: 'flex', alignItems: 'center', gap: '10px',
-    background: 'rgba(255,255,255,0.055)',
-    border: '1px solid rgba(255,255,255,0.09)',
-    borderRadius: '10px', padding: '10px 16px',
+    display:'flex', alignItems:'center', gap:10,
+    background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)',
+    borderRadius:10, padding:'10px 16px',
   },
-  statValue: { color: '#fff', fontWeight: '700', fontSize: '15px', lineHeight: 1 },
-  statLabel: { color: 'rgba(255,255,255,0.4)', fontSize: '11px', marginTop: '2px', letterSpacing: '0.4px' },
-
+  statValue: { fontSize:18, fontWeight:800, color:'#FBBF24', lineHeight:1 },
+  statLabel: { fontSize:11, color:'rgba(255,255,255,0.5)', marginTop:2 },
   glowRing: {
-    width: '200px', height: '200px', borderRadius: '50%',
-    background: 'radial-gradient(circle, rgba(251,191,36,0.1) 0%, transparent 70%)',
-    border: '1px solid rgba(251,191,36,0.18)',
-    boxShadow: '0 0 60px rgba(251,191,36,0.08)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    width:180, height:180, borderRadius:'50%',
+    background:'radial-gradient(circle, rgba(251,191,36,0.12) 0%, transparent 70%)',
+    border:'2px solid rgba(251,191,36,0.2)', display:'flex', alignItems:'center', justifyContent:'center',
   },
-  heroLogo: {
-    width: '165px', height: '165px', objectFit: 'contain',
-    filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.5))',
-  },
-  logoCaption: {
-    color: 'rgba(255,255,255,0.25)', fontSize: '10px',
-    letterSpacing: '3px', fontWeight: '700',
-  },
-
+  heroLogo:    { width:130, height:130, objectFit:'contain' },
+  logoCaption: { fontSize:10, fontWeight:700, letterSpacing:'3px', color:'rgba(255,255,255,0.35)' },
   ticker: {
-    background: '#0B2545',
-    color: 'rgba(255,255,255,0.45)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    flexWrap: 'wrap', gap: '0',
-    padding: '12px 24px',
-    fontSize: '11px', fontWeight: '700', letterSpacing: '2px',
-    borderRadius: '0 0 14px 14px', marginBottom: '56px',
+    background:'#0B2545', padding:'12px 24px',
+    display:'flex', alignItems:'center', gap:4,
+    overflowX:'auto', whiteSpace:'nowrap',
+    fontSize:12, fontWeight:700, letterSpacing:'2px', color:'rgba(255,255,255,0.5)',
+    borderRadius:8, margin:'16px 0',
   },
-
-  section: { marginBottom: '60px' },
-  eyebrow: {
-    fontSize: '11px', fontWeight: '700', letterSpacing: '2.5px',
-    color: '#C8102E', marginBottom: '8px',
-  },
-  sectionTitle: {
-    fontSize: 'clamp(22px, 3vw, 34px)', fontWeight: '800',
-    color: '#0B2545', marginBottom: '28px',
-    lineHeight: '1.2', letterSpacing: '-0.4px',
-  },
-
-  featGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-    gap: '18px',
-  },
-  featureBlock: {
-    background: '#fff', borderRadius: '12px', padding: '26px 22px',
-    border: '1px solid #E5E7EB',
-    boxShadow: '0 1px 4px rgba(11,37,69,0.06)',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-    position: 'relative', overflow: 'hidden', cursor: 'default',
-  },
-  featureBlockHov: {
-    transform: 'translateY(-4px)',
-    boxShadow: '0 8px 24px rgba(11,37,69,0.12)',
-  },
-  featureBar: {
-    position: 'absolute', top: 0, left: 0, width: '100%', height: '3px',
-  },
-  featureTitle: {
-    fontSize: '15px', fontWeight: '700', color: '#0B2545', marginBottom: '7px',
-  },
-  featureDesc: {
-    fontSize: '13px', color: '#6B7280', lineHeight: '1.6',
-  },
-
-  teamsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
-    gap: '16px',
-  },
-
-  viewAll: {
-    display: 'inline-block',
-    padding: '11px 26px',
-    border: '1.5px solid #0B2545',
-    borderRadius: '8px',
-    color: '#0B2545', textDecoration: 'none',
-    fontWeight: '700', fontSize: '14px',
-    transition: 'all 0.2s',
-  },
+  section:     { margin:'48px 0' },
+  eyebrow:     { fontSize:11, fontWeight:700, letterSpacing:'3px', color:'#FBBF24', textTransform:'uppercase', marginBottom:8, display:'flex', alignItems:'center' },
+  sectionTitle:{ fontSize:'clamp(22px,3.5vw,32px)', fontWeight:800, color:'#0B2545', margin:'0 0 32px', lineHeight:1.2 },
+  featGrid:    { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:20 },
+  featureBlock:{ background:'white', borderRadius:12, padding:24, boxShadow:'0 2px 12px rgba(0,0,0,0.05)', border:'1px solid #e8ecf0', position:'relative', overflow:'hidden', transition:'transform 0.2s, box-shadow 0.2s' },
+  featureBlockHov: { transform:'translateY(-3px)', boxShadow:'0 8px 24px rgba(0,0,0,0.10)' },
+  featureBar:  { position:'absolute', top:0, left:0, width:4, height:'100%', borderRadius:'0 0 0 12px' },
+  featureTitle:{ fontSize:16, fontWeight:700, color:'#0B2545', margin:'0 0 8px' },
+  featureDesc: { fontSize:14, color:'#5a6a7e', lineHeight:1.6, margin:0 },
+  teamsGrid:   { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:20 },
+  viewAll:     { color:'#C8102E', fontWeight:700, textDecoration:'none', fontSize:15, display:'inline-block' },
+  emptyAir:    { textAlign:'center', padding:'56px 24px', background:'white', borderRadius:16, border:'2px dashed #e2e8f0', display:'flex', flexDirection:'column', alignItems:'center', gap:12 },
+  emptyTitle:  { fontSize:20, fontWeight:700, color:'#0B2545', margin:0 },
+  emptyBody:   { color:'#8a98a8', fontSize:15, maxWidth:380, lineHeight:1.6, margin:0 },
 };
 
 export default HomePage;
