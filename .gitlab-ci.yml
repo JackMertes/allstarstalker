@@ -1,0 +1,115 @@
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+# ------------------------------------------------------------
+# Lint stage
+# - Backend: Java/Spring (Gradle)
+# - Frontend: React (npm + eslint via react-scripts)
+# ------------------------------------------------------------
+
+lint_backend:
+  stage: lint
+  image: gradle:8-jdk21
+  script:
+    # Run lightweight Gradle checks (can be expanded with Spotless/Checkstyle later)
+    - cd backend
+    - ./gradlew --no-daemon check
+  artifacts:
+    when: always
+    paths:
+      - backend/build/reports
+
+lint_frontend:
+  stage: lint
+  image: node:20
+  script:
+    - cd frontend
+    - npm ci
+    # react-scripts' eslint is wired via eslintConfig in package.json
+    - npx eslint src || echo "Frontend lint errors will be treated as failures once rules are finalized."
+  allow_failure: true
+
+# ------------------------------------------------------------
+# Test stage
+# - Backend unit tests
+# - Frontend tests (if present)
+# ------------------------------------------------------------
+
+test_backend:
+  stage: test
+  image: gradle:8-jdk21
+  script:
+    - cd backend
+    - ./gradlew --no-daemon test
+
+test_frontend:
+  stage: test
+  image: node:20
+  script:
+    - cd frontend
+    - npm ci
+    - npm test -- --ci --watch=false
+  allow_failure: true
+
+# ------------------------------------------------------------
+# Build stage
+# - Build backend jar
+# - Build frontend bundle
+# ------------------------------------------------------------
+
+build_backend:
+  stage: build
+  image: gradle:8-jdk21
+  script:
+    - cd backend
+    - ./gradlew --no-daemon bootJar
+  artifacts:
+    paths:
+      - backend/build/libs
+    expire_in: 1 week
+  needs:
+    - test_backend
+
+build_frontend:
+  stage: build
+  image: node:20
+  script:
+    - cd frontend
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/build
+    expire_in: 1 week
+  needs:
+    - test_frontend
+
+# ------------------------------------------------------------
+# Deploy stage
+# - Runs only on main
+# - SSH into GCE VM and pull latest, then docker compose up
+# - Expects CI variables: VM_HOST, VM_USER, VM_SSH_KEY
+# ------------------------------------------------------------
+
+deploy_to_vm:
+  stage: deploy
+  image: alpine:3.19
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+  before_script:
+    - apk add --no-cache openssh-client git
+    # Write SSH key from CI variable VM_SSH_KEY (protected, masked) to file
+    - mkdir -p ~/.ssh
+    - echo "$VM_SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan "$VM_HOST" >> ~/.ssh/known_hosts
+  script:
+    - ssh "$VM_USER@$VM_HOST" "
+        cd Project_3b &&
+        git pull &&
+        docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.cloud.yml up -d --build
+      "
+
