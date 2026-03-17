@@ -11,8 +11,9 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./database/flighttracker.sql:/docker-entrypoint-initdb.d/01-schema.sql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -hmysql -u${DB_USER} -p${DB_PASSWORD} --silent"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -21,14 +22,20 @@ services:
     build:
       context: ./backend
     container_name: flight_tracker_backend
+    restart: on-failure
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      # Backend writes flight_refresh.log here; host sees it in ./database/
+      INGESTION_LOG_PATH: /app/database/flight_refresh.log
     ports:
       - "8080:8080"
+    volumes:
+      # Mount database dir so backend can write flight_refresh.log to host
+      - ./database:/app/database
     depends_on:
       mysql:
         condition: service_healthy

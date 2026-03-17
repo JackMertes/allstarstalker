@@ -1,42 +1,44 @@
-
-import '../../styles/Common.css';
-import { STATUS_COLORS } from '../../utils/constants';
-import { FlightStatus} from '.'
-import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate } from 'react-router-dom';
-
-import { formatDateTime, formatTime, formatAltitude, formatSpeed } from '../../utils/formatters';
-
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import teamService from '../../services/teamService';
 import { getFlightStatus } from '../../utils/mockData';
+import { FlightStatus } from '.';
 import '../../styles/Flight.css';
+import '../../styles/Common.css';
 
 // Toggle to false when backend is ready
 const USE_MOCK = true;
 
+// Derives a readable location string from team data
+function getLocationDisplay(team) {
+  if (team.status === 'ACTIVE') return 'Currently Airborne';
+  if (team.lastAirport) return team.lastAirport;
+  if (team.origin)     return team.origin;
+  return 'Location unavailable';
+}
+
 function TeamCard({ team }) {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading]       = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+
+  const isLive = team.status === 'ACTIVE';
 
   const handleCheckStatus = async () => {
     setLoading(true);
     try {
       let statusData;
-      
+
       if (USE_MOCK) {
-        // Simulate network delay
         await new Promise(res => setTimeout(res, 500));
         statusData = getFlightStatus(team.callsign);
       } else {
-        // Real API call
+        // Real API — returns { [callsign]: statusData }
         const response = await teamService.checkStatus(team.callsign);
-        // API returns an object with callsign as key
         statusData = response[team.callsign];
       }
-      console.log('Status data for', team.callsign, ':', statusData);
 
       if (statusData && statusData.is_flying) {
-        // Navigate to flight details page
         navigate(`/flight/${team.callsign}`, { state: { flightData: statusData } });
       } else {
         alert(`${team.team} is not currently flying.`);
@@ -52,11 +54,9 @@ function TeamCard({ team }) {
   const handleAddToTracking = async () => {
     try {
       if (USE_MOCK) {
-        // Simulate success
         await new Promise(res => setTimeout(res, 300));
         alert(`${team.team} added to tracking!`);
       } else {
-        // Real API call
         await teamService.addTracking(team.callsign);
         alert(`${team.team} added to tracking!`);
       }
@@ -68,38 +68,84 @@ function TeamCard({ team }) {
 
   return (
     <div className="flight-card">
-      <div style={{ marginBottom: '12px' }}>
-        <h3 style={{ margin: '0 0 8px 0' }}>{team.team}</h3>
-        <span style={{ 
-          backgroundColor: '#3498db', 
-          color: 'white', 
-          padding: '4px 8px', 
-          borderRadius: '4px',
-          fontSize: '12px',
-          fontWeight: '600'
-        }}>
-          {team.category}
-        </span>
+      {/* Live / offline indicator dot */}
+      <div className={`live-dot ${isLive ? 'live' : 'offline'}`} title={isLive ? 'Live' : 'Not flying'} />
+
+      {/* Navy header bar */}
+      <div className="card-header">
+        <h3 className="card-team-name">{team.team}</h3>
+        <span className="category-badge">{team.category}</span>
       </div>
 
-      <div className="flight-info">
-        <p><strong>Callsign:</strong> {team.callsign}</p>
+      {/* Main info: location at a glance */}
+      <div className="card-body">
+        <div className="card-location">
+          <span className="location-icon">{isLive ? '✈️' : '🏟️'}</span>
+          <div className="location-text">
+            <div className="location-label">{isLive ? 'In Flight' : 'Last Known Location'}</div>
+            <div className="location-value">{getLocationDisplay(team)}</div>
+          </div>
+        </div>
       </div>
-      <FlightStatus status={team.status} />
-      <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+
+      {/* Show Details toggle */}
+      <button
+        className="details-toggle"
+        onClick={() => setShowDetails(prev => !prev)}
+        aria-expanded={showDetails}
+      >
+        Show Details
+        <span className={`toggle-arrow ${showDetails ? 'open' : ''}`}>▼</span>
+      </button>
+
+      {/* Collapsible detail rows */}
+      {showDetails && (
+        <div className="card-details">
+          <div className="detail-row">
+            <span className="detail-label">Callsign</span>
+            <span className="detail-value">{team.callsign}</span>
+          </div>
+          <div className="detail-row">
+            <span className="detail-label">Status</span>
+            <FlightStatus status={team.status} />
+          </div>
+          {team.category && (
+            <div className="detail-row">
+              <span className="detail-label">League</span>
+              <span className="detail-value">{team.category}</span>
+            </div>
+          )}
+          {team.origin && (
+            <div className="detail-row">
+              <span className="detail-label">Origin</span>
+              <span className="detail-value">{team.origin}</span>
+            </div>
+          )}
+          {team.destination && (
+            <div className="detail-row">
+              <span className="detail-label">Destination</span>
+              <span className="detail-value">{team.destination}</span>
+            </div>
+          )}
+          {team.aircraft && (
+            <div className="detail-row">
+              <span className="detail-label">Aircraft</span>
+              <span className="detail-value">{team.aircraft}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Action buttons */}
+      <div className="card-actions">
         <button
           className="btn btn-primary"
           onClick={handleCheckStatus}
           disabled={loading}
-          style={{ flex: 1 }}
         >
-          {loading ? 'Checking...' : 'Check Status'}
+          {loading ? 'Checking…' : 'Check Status'}
         </button>
-        <button
-          className="btn btn-secondary"
-          onClick={handleAddToTracking}
-          style={{ flex: 1 }}
-        >
+        <button className="btn btn-secondary" onClick={handleAddToTracking}>
           Add to Tracking
         </button>
       </div>

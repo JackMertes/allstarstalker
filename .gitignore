@@ -61,6 +61,8 @@ yarn-error.log*
 # Environment & Sensitive Files
 ############################################################
 .env
+.env.local
+.env.prod
 *.pem
 *.key
 *.p12

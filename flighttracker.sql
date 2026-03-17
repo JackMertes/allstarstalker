@@ -106,8 +106,8 @@ CREATE TABLE flights (
   flight_iata VARCHAR(16),
   flight_icao VARCHAR(16),
   aircraft_type VARCHAR(16),
-  departure_airport_id BIGINT UNSIGNED NOT NULL,
-  arrival_airport_id BIGINT UNSIGNED NOT NULL,
+  departure_airport_id BIGINT UNSIGNED NULL,
+  arrival_airport_id BIGINT UNSIGNED NULL,
   departure_scheduled_utc DATETIME,
   arrival_scheduled_utc DATETIME,
   status ENUM('SCHEDULED','ACTIVE','LANDED','CANCELLED','DIVERTED','INCIDENT','REDIRECTED','UNKNOWN') DEFAULT 'UNKNOWN',
@@ -123,8 +123,8 @@ CREATE TABLE flights (
   UNIQUE KEY uq_flights_external (external_flight_id),
   KEY idx_flights_dep_time (departure_airport_id, departure_scheduled_utc),
   KEY idx_flights_arr_time (arrival_airport_id, arrival_scheduled_utc),
-  CONSTRAINT fk_flights_dep_airport FOREIGN KEY (departure_airport_id) REFERENCES airports(id),
-  CONSTRAINT fk_flights_arr_airport FOREIGN KEY (arrival_airport_id) REFERENCES airports(id)
+  CONSTRAINT fk_flights_dep_airport FOREIGN KEY (departure_airport_id) REFERENCES airports(id) ON DELETE SET NULL,
+  CONSTRAINT fk_flights_arr_airport FOREIGN KEY (arrival_airport_id) REFERENCES airports(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 CREATE TABLE team_flights (
@@ -216,8 +216,8 @@ SELECT
   f.total_flight_time_min,
   f.last_seen_utc
 FROM flights f
-JOIN airports dep ON dep.id = f.departure_airport_id
-JOIN airports arr ON arr.id = f.arrival_airport_id;
+LEFT JOIN airports dep ON dep.id = f.departure_airport_id
+LEFT JOIN airports arr ON arr.id = f.arrival_airport_id;
 
 CREATE VIEW v_team_flight_list AS
 SELECT

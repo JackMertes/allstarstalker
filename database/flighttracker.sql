@@ -40,10 +40,12 @@ CREATE TABLE teams (
   city          VARCHAR(80) NOT NULL,
   conference    ENUM('East','West'),
   division      VARCHAR(40),
+  callsign      VARCHAR(16) NULL,
   created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_team_abbrev (abbreviation),
-  UNIQUE KEY uq_team_name (name)
+  UNIQUE KEY uq_team_name (name),
+  UNIQUE KEY uq_team_callsign (callsign)
 ) ENGINE=InnoDB;
 
 -- ============================================================
@@ -76,8 +78,8 @@ CREATE TABLE flights (
   airline_icao            CHAR(3),
   flight_number           VARCHAR(16),
   aircraft_type           VARCHAR(16),
-  departure_airport_id    BIGINT UNSIGNED NOT NULL,
-  arrival_airport_id      BIGINT UNSIGNED NOT NULL,
+  departure_airport_id    BIGINT UNSIGNED NULL,
+  arrival_airport_id      BIGINT UNSIGNED NULL,
 
   scheduled_departure_utc DATETIME,
   scheduled_arrival_utc   DATETIME,
@@ -87,16 +89,25 @@ CREATE TABLE flights (
   status ENUM('SCHEDULED','ACTIVE','LANDED','CANCELLED','DIVERTED','UNKNOWN')
          DEFAULT 'UNKNOWN',
 
+  live_updated_utc DATETIME(3) NULL,
+  live_latitude DECIMAL(9,6) NULL,
+  live_longitude DECIMAL(9,6) NULL,
+  live_altitude_ft INT NULL,
+  live_ground_speed_kt DECIMAL(8,1) NULL,
+  live_heading_deg DECIMAL(6,2) NULL,
+  last_seen_utc DATETIME(3) NULL,
+
   distance_km DECIMAL(8,2),
   duration_minutes INT,
   notes VARCHAR(255),
 
   UNIQUE KEY uq_external (external_flight_id),
+  UNIQUE KEY uq_callsign (callsign),
   KEY idx_dep_time (departure_airport_id, scheduled_departure_utc),
   KEY idx_arr_time (arrival_airport_id, scheduled_arrival_utc),
 
-  CONSTRAINT fk_dep_airport FOREIGN KEY (departure_airport_id) REFERENCES airports(id),
-  CONSTRAINT fk_arr_airport FOREIGN KEY (arrival_airport_id) REFERENCES airports(id)
+  CONSTRAINT fk_dep_airport FOREIGN KEY (departure_airport_id) REFERENCES airports(id) ON DELETE SET NULL,
+  CONSTRAINT fk_arr_airport FOREIGN KEY (arrival_airport_id) REFERENCES airports(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 -- ============================================================
@@ -173,12 +184,20 @@ SELECT
   f.status,
   f.distance_km,
 
+  f.live_updated_utc,
+  f.live_latitude,
+  f.live_longitude,
+  f.live_altitude_ft,
+  f.live_ground_speed_kt,
+  f.live_heading_deg,
+  f.last_seen_utc,
+
   TIMESTAMPDIFF(MINUTE, f.scheduled_departure_utc, f.scheduled_arrival_utc) AS scheduled_duration_min,
   TIMESTAMPDIFF(MINUTE, f.actual_departure_utc, f.actual_arrival_utc) AS actual_duration_min
 
 FROM flights f
-JOIN airports dep ON dep.id = f.departure_airport_id
-JOIN airports arr ON arr.id = f.arrival_airport_id;
+LEFT JOIN airports dep ON dep.id = f.departure_airport_id
+LEFT JOIN airports arr ON arr.id = f.arrival_airport_id;
 
 CREATE VIEW v_team_flight_list AS
 SELECT
@@ -222,10 +241,37 @@ DELIMITER ;
 -- SEED DATA
 -- ============================================================
 
-INSERT INTO teams (nba_team_id, name, abbreviation, city, conference)
+INSERT INTO teams (nba_team_id, name, abbreviation, city, conference, callsign)
 VALUES
-('MIL','Milwaukee Bucks','MIL','Milwaukee','East'),
-('GSW','Golden State Warriors','GSW','San Francisco','West');
+('ATL','Atlanta Hawks','ATL','Atlanta','East','DAL8918'),
+('BOS','Boston Celtics','BOS','Boston','East','DAL8919'),
+('BKN','Brooklyn Nets','BKN','Brooklyn','East','DAL8920'),
+('CHA','Charlotte Hornets','CHA','Charlotte','East','DAL8921'),
+('CHI','Chicago Bulls','CHI','Chicago','East','DAL8922'),
+('CLE','Cleveland Cavaliers','CLE','Cleveland','East','DAL8923'),
+('DEN','Denver Nuggets','DEN','Denver','West','DAL8924'),
+('DET','Detroit Pistons','DET','Detroit','East','DAL8925'),
+('GSW','Golden State Warriors','GSW','San Francisco','West','DAL8926'),
+('IND','Indiana Pacers','IND','Indianapolis','East','DAL8927'),
+('LAC','Los Angeles Clippers','LAC','Los Angeles','West','DAL8928'),
+('LAL','Los Angeles Lakers','LAL','Los Angeles','West','DAL8929'),
+('MEM','Memphis Grizzlies','MEM','Memphis','West','DAL8930'),
+('MIA','Miami Heat','MIA','Miami','East','DAL8931'),
+('MIL','Milwaukee Bucks','MIL','Milwaukee','East','DAL8932'),
+('MIN','Minnesota Timberwolves','MIN','Minneapolis','West','DAL8933'),
+('NOP','New Orleans Pelicans','NOP','New Orleans','West','DAL8934'),
+('NYK','New York Knicks','NYK','New York','East','DAL8935'),
+('OKC','Oklahoma City Thunder','OKC','Oklahoma City','West','DAL8936'),
+('ORL','Orlando Magic','ORL','Orlando','East','DAL8937'),
+('PHI','Philadelphia 76ers','PHI','Philadelphia','East','DAL8938'),
+('PHX','Phoenix Suns','PHX','Phoenix','West','DAL8939'),
+('POR','Portland Trail Blazers','POR','Portland','West','DAL8940'),
+('SAC','Sacramento Kings','SAC','Sacramento','West','DAL8941'),
+('SAS','San Antonio Spurs','SAS','San Antonio','West','DAL8942'),
+('TOR','Toronto Raptors','TOR','Toronto','East','DAL8943'),
+('UTA','Utah Jazz','UTA','Salt Lake City','West','DAL8944'),
+('WAS','Washington Wizards','WAS','Washington','East','DAL8945')
+ON DUPLICATE KEY UPDATE callsign = VALUES(callsign);
 
 INSERT INTO airports (iata_code, name, city, country)
 VALUES
