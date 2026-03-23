@@ -12,6 +12,8 @@ services:
       - "127.0.0.1:3306:3306"
     restart: unless-stopped
     # Schema is managed by Flyway in the backend (runs on app startup). No Docker init script.
+    volumes:
+      - mysql_data:/var/lib/mysql
 
   backend:
     env_file: .env.prod
