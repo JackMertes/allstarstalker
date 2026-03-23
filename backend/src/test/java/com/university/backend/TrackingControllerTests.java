@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 // import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 // import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
@@ -23,6 +24,7 @@ import java.util.Map;
 */
 @SpringBootTest
 @AutoConfigureRestTestClient
+@ActiveProfiles("test")
 public class TrackingControllerTests {
 
     @Autowired
@@ -120,11 +122,7 @@ public class TrackingControllerTests {
      * Request is POST via "/api/tracking/"
     */
     @Test
-    public void testGetUserTracking() {
-
-
-
-    }
+    public void testGetUserTracking() {assert(false);}
 
     /*
      * Tests the functionality of TrackingController#removeTracking()
@@ -132,5 +130,5 @@ public class TrackingControllerTests {
      * Request is DELETE via "/api/tracking/{trackingId}"
     */
     @Test
-    public void testRemoveTracking() {}
+    public void testRemoveTracking() {assert(false);}
 }

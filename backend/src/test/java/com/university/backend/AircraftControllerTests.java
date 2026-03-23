@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 
@@ -20,6 +21,7 @@ import java.util.Map;
 */
 @SpringBootTest
 @AutoConfigureRestTestClient
+@ActiveProfiles("test")
 public class AircraftControllerTests {
 
     @Autowired
@@ -106,7 +108,7 @@ public class AircraftControllerTests {
 
     /*
     * Test the functionality of AircraftController.
-   */
+    */
     @Test
     void testGetAircraftByTailNumber() {
 

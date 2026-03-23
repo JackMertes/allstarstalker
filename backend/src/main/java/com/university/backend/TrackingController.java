@@ -17,7 +17,9 @@ import org.springframework.web.client.RestTemplate;
 
 
 /**
- * GET /api/tracking - returns list of tracked items (expected by frontend TrackingPage).
+ * Directs HTTP requests mapped to "/api/tracking/..." to the proper endpoints
+ * Services in this module respond to GET / POST / DELETE requests.
+ * In Progress (note to self - needs documentation, and fully implemented methods).
  */
 @RestController
 @RequestMapping("/api/tracking")

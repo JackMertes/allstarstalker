@@ -1,5 +1,7 @@
 package com.university.backend;
 
+import org.apache.catalina.connector.Response;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,31 +12,46 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 
+/**
+ * Directs HTTP requests to "/api/teams/..." to the proper endpoints
+ * Services in this module respond to GET requests.
+ */
 @RestController
 @RequestMapping("/api/teams")
 public class TeamController {
 
-    /*private final MockDataService mockDataService;
-    public TeamController(MockDataService mockDataService) {
-        this.mockDataService = mockDataService;
-    }*/
+    /** Used to query about teams */
+   @Autowired
+   TeamRepository repo;
 
+    /**
+     * Handles GET requests to "/api/teams" and provides a ResonseEntity
+     * encapsulating a list where each member is the mapped data of a team.
+     * 
+     * @return RespnseEntity<?> holding a status code and encapsulated body
+     */
     @GetMapping("")
     public ResponseEntity<List<Map<String, String>>> getTeams() {
-        //return mockDataService.getTeams();
+        // all flights from FlightRepository,
+        List<Team> teams = repo.findAll();
+        if (teams.isEmpty()) {return ResponseEntity.status(500).build();}
 
-        Map<String, String> map = new HashMap<>();
-        List<Map<String, String>> teams = new ArrayList<Map<String, String>>();
+        // one set of mappings per team (teamDataSet), all teams held in teamMappings
+        List<Map<String, String>> teamMappings;
+        Map<String, String> teamDataSet;
 
-        Team team = new Team();
-        map.put("teamName", team.getName());
-        map.put("teamId", team.getNbaTeamId());
-        map.put("division", team.getDivision());
-        map.put("city", team.getCity());
-        map.put("callSign", team.getCallsign());
-        teams.add(map);
-        ResponseEntity<List<Map<String,String>>> resp = ResponseEntity.ok(teams);
-
-        return resp;
+        // map data for each team
+        teamMappings = new ArrayList<Map<String, String>>();
+        for (Team t : teams) {
+            teamDataSet = new HashMap<String, String>();
+            teamDataSet.put("teamName", t.getName());
+            teamDataSet.put("teamId", t.getNbaTeamId());
+            teamDataSet.put("division", t.getDivision());
+            teamDataSet.put("city", t.getCity());
+            teamDataSet.put("callSign", t.getCallsign());
+            teamMappings.add(teamDataSet);
+        }
+        // encapsulate list of team mappings into a response body, with code 200 
+        return ResponseEntity.ok(teamMappings);
     }
 }
