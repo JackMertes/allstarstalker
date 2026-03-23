@@ -27,7 +27,7 @@ import java.util.List;
 public class FlightController {
 
     /** Used to query about flights */
-    @Autowired
+    // @Autowired
     private FlightRepository repo;
 
     /**

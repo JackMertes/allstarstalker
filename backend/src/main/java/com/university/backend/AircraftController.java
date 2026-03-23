@@ -30,7 +30,7 @@ import java.util.HashMap;
 public class AircraftController {
 
     /** Retrieve list of planes from db */
-    @Autowired
+    // @Autowired
     private AirplanesLiveResponse repo;
 
     private final RestTemplate restTemplate;

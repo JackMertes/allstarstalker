@@ -21,7 +21,7 @@ import java.util.List;
 public class TeamController {
 
     /** Used to query about teams */
-   @Autowired
+//    @Autowired
    TeamRepository repo;
 
     /**
