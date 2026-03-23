@@ -46,10 +46,10 @@ public class Flight {
     @Column(name = "aircraft_type", length = 16)
     private String aircraftType;
 
-    @Column(name = "departure_airport_id")
+    @Column(name = "departure_airport_id", nullable = false)
     private Long departureAirportId;
 
-    @Column(name = "arrival_airport_id")
+    @Column(name = "arrival_airport_id", nullable = false)
     private Long arrivalAirportId;
 
     @Column(name = "scheduled_departure_utc")
