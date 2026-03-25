@@ -45,7 +45,7 @@ function SearchPage() {
     searchResults, setSearchResults,
   } = useApp();
 
-  const { favourites, isFavourite } = useFavourites();
+  const { isFavourite } = useFavourites();
   const [sortMode, setSortMode]       = useState('active');
   const [showSortMenu, setShowSortMenu] = useState(false);
 

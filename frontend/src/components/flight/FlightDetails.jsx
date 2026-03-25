@@ -1,7 +1,6 @@
 import React from 'react';
 import { formatAltitude, formatSpeed } from '../../utils/formatters';
 import '../../styles/Flight.css';
-import { FlightStatus} from './'
 
 function FlightDetails({ flightData }) {
   if (!flightData || !flightData.raw || !flightData.raw.ac || flightData.raw.ac.length === 0) {
