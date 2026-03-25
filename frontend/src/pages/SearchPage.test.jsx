@@ -6,7 +6,6 @@ import SearchPage from './SearchPage';
 import { AppProvider } from '../context/AppContext';
 import teamService from '../services/teamService';
 
-// Mock teamService so tests don't hit the network
 jest.mock('../services/teamService', () => ({
   __esModule: true,
   default: {
@@ -20,7 +19,6 @@ const mockTeams = [
   { callsign: 'DAL8920', team: 'Brooklyn Nets',     category: 'NBA', status: 'ACTIVE' },
 ];
 
-/** Wraps SearchPage with all required providers */
 function renderSearchPage() {
   return render(
     <AppProvider>
@@ -60,11 +58,10 @@ describe('SearchPage', () => {
     });
   });
 
-  it('shows a loading spinner while teams are being fetched', () => {
-    // Keep promise pending so loading state stays true
+  it('shows skeleton placeholders while teams are being fetched', () => {
     teamService.getAllTeams.mockReturnValue(new Promise(() => {}));
     renderSearchPage();
-    expect(screen.getByText(/searching teams/i)).toBeInTheDocument();
+    expect(document.querySelector('.sk-shimmer')).toBeInTheDocument();
   });
 
   it('displays fetched teams after loading', async () => {
@@ -76,20 +73,19 @@ describe('SearchPage', () => {
 
   it('shows the result count after loading', async () => {
     renderSearchPage();
-    // TeamList renders "X teams found" — use this unique text to avoid matching the sort bar
     expect(await screen.findByText(/3 teams found/i)).toBeInTheDocument();
   });
 
-  it('shows the Sort button once results are available', async () => {
+  it('shows the sort control once results are available', async () => {
     renderSearchPage();
-    expect(await screen.findByRole('button', { name: /sort:/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /active first/i })).toBeInTheDocument();
   });
 
-  it('shows sort options when the Sort button is clicked', async () => {
+  it('shows sort options when the sort control is clicked', async () => {
     const user = userEvent.setup();
     renderSearchPage();
 
-    const sortBtn = await screen.findByRole('button', { name: /sort:/i });
+    const sortBtn = await screen.findByRole('button', { name: /active first/i });
     await user.click(sortBtn);
 
     expect(screen.getByText('A → Z')).toBeInTheDocument();
@@ -99,13 +95,11 @@ describe('SearchPage', () => {
   });
 
   it('filters teams when a search query is submitted', async () => {
-    // On search, getAllTeams is called again then filtered client-side
     teamService.getAllTeams.mockResolvedValue(mockTeams);
 
     const user = userEvent.setup();
     renderSearchPage();
 
-    // Wait for initial load
     await screen.findByText('Denver Nuggets');
 
     const input = screen.getByPlaceholderText(/search by team name/i);
@@ -114,28 +108,22 @@ describe('SearchPage', () => {
     await user.click(screen.getByRole('button', { name: /^search$/i }));
 
     expect(await screen.findByText('Dallas Cowboys')).toBeInTheDocument();
-    // Non-matching team should not be visible after filter
     expect(screen.queryByText('Denver Nuggets')).not.toBeInTheDocument();
+    expect(teamService.getAllTeams).toHaveBeenCalledTimes(1);
   });
 
-  it('shows an error message when a search query fails', async () => {
-    // Initial load succeeds; the subsequent search call rejects
-    teamService.getAllTeams
-      .mockResolvedValueOnce(mockTeams)
-      .mockRejectedValueOnce(new Error('Network error'));
-
+  it('does not refetch teams when filtering after initial load', async () => {
+    teamService.getAllTeams.mockResolvedValue(mockTeams);
     const user = userEvent.setup();
     renderSearchPage();
-
-    // Wait for initial load to finish
     await screen.findByText('Denver Nuggets');
+    expect(teamService.getAllTeams).toHaveBeenCalledTimes(1);
 
     const input = screen.getByPlaceholderText(/search by team name/i);
-    await user.type(input, 'NBA');
+    await user.type(input, 'Nets');
     await user.click(screen.getByRole('button', { name: /^search$/i }));
 
-    expect(
-      await screen.findByText(/failed to search teams/i)
-    ).toBeInTheDocument();
+    await screen.findByText('Brooklyn Nets');
+    expect(teamService.getAllTeams).toHaveBeenCalledTimes(1);
   });
 });
