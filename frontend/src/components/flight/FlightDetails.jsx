@@ -1,13 +1,11 @@
 import React from 'react';
 import { formatAltitude, formatSpeed } from '../../utils/formatters';
 import '../../styles/Flight.css';
-import { FlightStatus} from './'
 
 function FlightDetails({ flightData }) {
   if (!flightData || !flightData.raw || !flightData.raw.ac || flightData.raw.ac.length === 0) {
     return <div>No flight data available</div>;
   }
-  console.log('Flight data:', flightData);
 
   const aircraft = flightData.raw.ac[0];
 

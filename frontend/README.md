@@ -5,7 +5,7 @@ Frontend application for the Flight Tracker system - P_07 Big Old Jet Airliner.
 ## Prerequisites
 
 - Node.js 16+ and npm
-- Backend API running on `http://localhost:8080`
+- Backend API: default target is the class VM (`docs/DEVELOPER_ACCESS.md`); use local `http://localhost:8080` when running Docker backend only
 
 ## Setup Instructions
 
@@ -63,7 +63,7 @@ src/
 
 The frontend connects to the Spring Boot backend at the URL specified in `.env`:
 ```
-REACT_APP_API_BASE_URL=http://localhost:8080/api
+REACT_APP_API_BASE_URL=http://34.134.223.201:8080/api
 ```
 
 ## Development Guidelines

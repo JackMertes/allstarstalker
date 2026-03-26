@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useFavourites } from '../hooks/useFavourites';
 import teamService from '../services/teamService';
 import { mockTeams, searchTeams } from '../utils/mockData';
+import { filterTeamsBySearchTerm } from '../utils/teamApiMapper';
 import { TeamCard } from '../components/flight';
 import '../styles/Flight.css';
 
@@ -21,6 +22,10 @@ const SORT_OPTIONS = [
 
 const STATUS_RANK = { ACTIVE: 0, LANDED: 1, UNKNOWN: 2 };
 
+function teamSortKey(t) {
+  return (t && t.team) ? String(t.team) : '';
+}
+
 function sortTeams(teams, mode) {
   const copy = [...teams];
   if (mode === 'active') {
@@ -28,12 +33,12 @@ function sortTeams(teams, mode) {
       const ra = STATUS_RANK[a.status] ?? 2;
       const rb = STATUS_RANK[b.status] ?? 2;
       if (ra !== rb) return ra - rb;
-      return a.team.localeCompare(b.team);
+      return teamSortKey(a).localeCompare(teamSortKey(b));
     });
   }
   if (mode === 'recent') return copy.sort((a, b) => (STATUS_RANK[b.status] ?? 2) - (STATUS_RANK[a.status] ?? 2));
-  if (mode === 'az')     return copy.sort((a, b) => a.team.localeCompare(b.team));
-  if (mode === 'za')     return copy.sort((a, b) => b.team.localeCompare(a.team));
+  if (mode === 'az')     return copy.sort((a, b) => teamSortKey(a).localeCompare(teamSortKey(b)));
+  if (mode === 'za')     return copy.sort((a, b) => teamSortKey(b).localeCompare(teamSortKey(a)));
   return copy;
 }
 
@@ -45,16 +50,20 @@ function SearchPage() {
     searchResults, setSearchResults,
   } = useApp();
 
-  const { favourites, isFavourite } = useFavourites();
+  const { isFavourite } = useFavourites();
   const [sortMode, setSortMode]       = useState('active');
   const [showSortMenu, setShowSortMenu] = useState(false);
+  /** Full list from API (or mock); search filters this without re-fetching */
+  const [allTeamsCache, setAllTeamsCache] = useState(null);
 
-  // Load all teams on first visit
   useEffect(() => {
     if (searchResults === null) {
-      USE_MOCK
-        ? setSearchResults(mockTeams)
-        : loadTeams();
+      if (USE_MOCK) {
+        setAllTeamsCache(mockTeams);
+        setSearchResults(mockTeams);
+      } else {
+        loadTeams();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -63,10 +72,12 @@ function SearchPage() {
     setLoading(true);
     clearError();
     try {
-      const data = await teamService.getAllTeams();
-      setSearchResults(data?.length ? data : mockTeams);
+      const teams = await teamService.getAllTeams();
+      setAllTeamsCache(teams);
+      setSearchResults(teams);
     } catch {
       setError('Could not load teams. Showing local data.');
+      setAllTeamsCache(mockTeams);
       setSearchResults(mockTeams);
     } finally {
       setLoading(false);
@@ -76,10 +87,19 @@ function SearchPage() {
   const handleSearch = (term) => {
     setSearchTerm(term);
     if (!term.trim()) {
-      USE_MOCK ? setSearchResults(mockTeams) : loadTeams();
+      if (USE_MOCK) {
+        setSearchResults(mockTeams);
+      } else if (allTeamsCache != null) {
+        setSearchResults(allTeamsCache);
+      } else {
+        loadTeams();
+      }
       return;
     }
-    const filtered = searchTeams(term);
+    const source = USE_MOCK ? mockTeams : (allTeamsCache ?? []);
+    const filtered = USE_MOCK
+      ? searchTeams(term)
+      : filterTeamsBySearchTerm(source, term);
     setSearchResults(filtered);
   };
 
