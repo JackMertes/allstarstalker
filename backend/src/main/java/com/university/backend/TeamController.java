@@ -1,7 +1,7 @@
 package com.university.backend;
 
-import org.apache.catalina.connector.Response;
-import org.springframework.beans.factory.annotation.Autowired;
+// import org.apache.catalina.connector.Response;
+// import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,8 +21,7 @@ import java.util.List;
 public class TeamController {
 
     /** Used to query about teams */
-//    @Autowired
-   TeamRepository repo;
+    private TeamRepository repo;
 
     /**
      * Handles GET requests to "/api/teams" and provides a ResonseEntity
