@@ -15,10 +15,13 @@ public class FlywayMigrationConfig {
 
 	@Bean(initMethod = "migrate")
 	public Flyway flyway(DataSource dataSource) {
+		// Existing DBs populated before Flyway (tables but no flyway_schema_history) need baseline.
+		// baselineVersion=4 matches latest migration so we do not re-run CREATE/INSERT scripts.
 		return Flyway.configure()
 			.dataSource(dataSource)
 			.locations("classpath:db/migration")
-			.baselineOnMigrate(false)
+			.baselineOnMigrate(true)
+			.baselineVersion("4")
 			.load();
 	}
 

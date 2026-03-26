@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useFavourites } from '../hooks/useFavourites';
 import teamService from '../services/teamService';
 import { mockTeams, searchTeams } from '../utils/mockData';
+import { filterTeamsBySearchTerm } from '../utils/teamApiMapper';
 import { TeamCard } from '../components/flight';
 import '../styles/Flight.css';
 
@@ -48,13 +49,18 @@ function SearchPage() {
   const { favourites, isFavourite } = useFavourites();
   const [sortMode, setSortMode]       = useState('active');
   const [showSortMenu, setShowSortMenu] = useState(false);
+  /** Full list from API (or mock); search filters this without re-fetching */
+  const [allTeamsCache, setAllTeamsCache] = useState(null);
 
   // Load all teams on first visit
   useEffect(() => {
     if (searchResults === null) {
-      USE_MOCK
-        ? setSearchResults(mockTeams)
-        : loadTeams();
+      if (USE_MOCK) {
+        setAllTeamsCache(mockTeams);
+        setSearchResults(mockTeams);
+      } else {
+        loadTeams();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -63,10 +69,12 @@ function SearchPage() {
     setLoading(true);
     clearError();
     try {
-      const data = await teamService.getAllTeams();
-      setSearchResults(data?.length ? data : mockTeams);
+      const teams = await teamService.getAllTeams();
+      setAllTeamsCache(teams);
+      setSearchResults(teams);
     } catch {
       setError('Could not load teams. Showing local data.');
+      setAllTeamsCache(mockTeams);
       setSearchResults(mockTeams);
     } finally {
       setLoading(false);
@@ -76,10 +84,19 @@ function SearchPage() {
   const handleSearch = (term) => {
     setSearchTerm(term);
     if (!term.trim()) {
-      USE_MOCK ? setSearchResults(mockTeams) : loadTeams();
+      if (USE_MOCK) {
+        setSearchResults(mockTeams);
+      } else if (allTeamsCache != null) {
+        setSearchResults(allTeamsCache);
+      } else {
+        loadTeams();
+      }
       return;
     }
-    const filtered = searchTeams(term);
+    const source = USE_MOCK ? mockTeams : (allTeamsCache ?? []);
+    const filtered = USE_MOCK
+      ? searchTeams(term)
+      : filterTeamsBySearchTerm(source, term);
     setSearchResults(filtered);
   };
 

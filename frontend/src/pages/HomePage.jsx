@@ -5,8 +5,9 @@ import { TeamCard } from '../components/flight';
 import { mockTeams } from '../utils/mockData';
 import { useCountUp } from '../hooks/useCountUp';
 import logo from '../assets/logo.png';
+import { DEFAULT_API_BASE_URL } from '../utils/constants';
 
-const BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
+const BASE = process.env.REACT_APP_API_BASE_URL || DEFAULT_API_BASE_URL;
 const USE_MOCK = false;
 
 // ── Animated floating dots on hero ───────────────────────────────────────────
