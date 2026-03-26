@@ -6,7 +6,6 @@ import SearchPage from './SearchPage';
 import { AppProvider } from '../context/AppContext';
 import teamService from '../services/teamService';
 
-// Mock teamService so tests don't hit the network
 jest.mock('../services/teamService', () => ({
   __esModule: true,
   default: {
@@ -20,7 +19,6 @@ const mockTeams = [
   { callsign: 'DAL8920', team: 'Brooklyn Nets',     category: 'NBA', status: 'ACTIVE' },
 ];
 
-/** Wraps SearchPage with all required providers */
 function renderSearchPage() {
   return render(
     <AppProvider>
@@ -75,7 +73,6 @@ describe('SearchPage', () => {
 
   it('shows the result count after loading', async () => {
     renderSearchPage();
-    // TeamList renders "X teams found" — use this unique text to avoid matching the sort bar
     expect(await screen.findByText(/3 teams found/i)).toBeInTheDocument();
   });
 
@@ -103,7 +100,6 @@ describe('SearchPage', () => {
     const user = userEvent.setup();
     renderSearchPage();
 
-    // Wait for initial load
     await screen.findByText('Denver Nuggets');
 
     const input = screen.getByPlaceholderText(/search by team name/i);
@@ -112,7 +108,6 @@ describe('SearchPage', () => {
     await user.click(screen.getByRole('button', { name: /^search$/i }));
 
     expect(await screen.findByText('Dallas Cowboys')).toBeInTheDocument();
-    // Non-matching team should not be visible after filter
     expect(screen.queryByText('Denver Nuggets')).not.toBeInTheDocument();
     // Search filters the cached list; no second fetch
     expect(teamService.getAllTeams).toHaveBeenCalledTimes(1);

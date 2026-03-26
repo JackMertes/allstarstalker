@@ -22,6 +22,10 @@ const SORT_OPTIONS = [
 
 const STATUS_RANK = { ACTIVE: 0, LANDED: 1, UNKNOWN: 2 };
 
+function teamSortKey(t) {
+  return (t && t.team) ? String(t.team) : '';
+}
+
 function sortTeams(teams, mode) {
   const copy = [...teams];
   if (mode === 'active') {
@@ -29,12 +33,12 @@ function sortTeams(teams, mode) {
       const ra = STATUS_RANK[a.status] ?? 2;
       const rb = STATUS_RANK[b.status] ?? 2;
       if (ra !== rb) return ra - rb;
-      return a.team.localeCompare(b.team);
+      return teamSortKey(a).localeCompare(teamSortKey(b));
     });
   }
   if (mode === 'recent') return copy.sort((a, b) => (STATUS_RANK[b.status] ?? 2) - (STATUS_RANK[a.status] ?? 2));
-  if (mode === 'az')     return copy.sort((a, b) => a.team.localeCompare(b.team));
-  if (mode === 'za')     return copy.sort((a, b) => b.team.localeCompare(a.team));
+  if (mode === 'az')     return copy.sort((a, b) => teamSortKey(a).localeCompare(teamSortKey(b)));
+  if (mode === 'za')     return copy.sort((a, b) => teamSortKey(b).localeCompare(teamSortKey(a)));
   return copy;
 }
 
@@ -46,13 +50,12 @@ function SearchPage() {
     searchResults, setSearchResults,
   } = useApp();
 
-  const { favourites, isFavourite } = useFavourites();
+  const { isFavourite } = useFavourites();
   const [sortMode, setSortMode]       = useState('active');
   const [showSortMenu, setShowSortMenu] = useState(false);
   /** Full list from API (or mock); search filters this without re-fetching */
   const [allTeamsCache, setAllTeamsCache] = useState(null);
 
-  // Load all teams on first visit
   useEffect(() => {
     if (searchResults === null) {
       if (USE_MOCK) {
