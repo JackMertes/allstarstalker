@@ -1,67 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import logo from '../assets/logo.png';
 import { TeamGridSkeleton } from '../components/common/TeamCardSkeleton';
 import { TeamCard } from '../components/flight';
 import { mockTeams } from '../utils/mockData';
-import { useCountUp } from '../hooks/useCountUp';
-import logo from '../assets/logo.png';
-import { DEFAULT_API_BASE_URL } from '../utils/constants';
 
-const BASE = process.env.REACT_APP_API_BASE_URL || DEFAULT_API_BASE_URL;
 const USE_MOCK = false;
+const BASE     = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
-// ── Animated floating dots on hero ───────────────────────────────────────────
+// ── Animated flight dots (decorative) ────────────────────────────────────────
 function FlightDots() {
-  const dots = [
-    { top: '20%', left: '5%',  delay: '0s',   dur: '8s'  },
-    { top: '60%', left: '15%', delay: '1.5s', dur: '10s' },
-    { top: '35%', left: '30%', delay: '3s',   dur: '7s'  },
-    { top: '75%', left: '50%', delay: '0.8s', dur: '9s'  },
-    { top: '15%', left: '65%', delay: '2.2s', dur: '6s'  },
-    { top: '50%', left: '80%', delay: '4s',   dur: '11s' },
-  ];
   return (
-    <>
-      <style>{`
-        @keyframes floatDot {
-          0%   { transform: translateX(0) translateY(0) scale(1); opacity: 0.7; }
-          50%  { transform: translateX(30px) translateY(-20px) scale(1.4); opacity: 1; }
-          100% { transform: translateX(60px) translateY(0) scale(1); opacity: 0.7; }
-        }
-        @keyframes pulseRed {
-          0%, 100% { box-shadow: 0 0 0 3px rgba(239,68,68,0.3); }
-          50%       { box-shadow: 0 0 0 7px rgba(239,68,68,0.1); }
-        }
-        @keyframes pulseGreen {
-          0%, 100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.3); }
-          50%       { box-shadow: 0 0 0 7px rgba(34,197,94,0.1); }
-        }
-        @keyframes floatPlane {
-          0%, 100% { opacity: 0.35; transform: translateY(0); }
-          50%       { opacity: 0.5;  transform: translateY(-6px); }
-        }
-      `}</style>
-      {dots.map((d, i) => (
-        <div key={i} style={{
-          position: 'absolute', top: d.top, left: d.left,
-          width: 5, height: 5, borderRadius: '50%',
-          background: 'rgba(251,191,36,0.55)',
-          animation: `floatDot ${d.dur} ease-in-out ${d.delay} infinite`,
-          pointerEvents: 'none',
-        }} />
+    <svg style={{ position:'absolute', inset:0, width:'100%', height:'100%', pointerEvents:'none', overflow:'hidden' }} aria-hidden>
+      {[
+        { cx:'15%', cy:'30%', r:2,   dur:'8s',  dx:120, dy:-40  },
+        { cx:'70%', cy:'20%', r:1.5, dur:'11s', dx:-80, dy:60   },
+        { cx:'40%', cy:'70%', r:2,   dur:'9s',  dx:100, dy:-30  },
+        { cx:'85%', cy:'60%', r:1.5, dur:'13s', dx:-60, dy:-50  },
+        { cx:'55%', cy:'45%', r:1,   dur:'7s',  dx:80,  dy:40   },
+      ].map((d, i) => (
+        <circle key={i} cx={d.cx} cy={d.cy} r={d.r} fill="rgba(251,191,36,0.5)">
+          <animateMotion dur={d.dur} repeatCount="indefinite" path={`M0,0 l${d.dx},${d.dy} l${-d.dx},${-d.dy}`} />
+        </circle>
       ))}
-    </>
+    </svg>
   );
 }
 
-// ── Animated stat pill ────────────────────────────────────────────────────────
+// ── Stat pill ─────────────────────────────────────────────────────────────────
 function StatPill({ icon, value, label }) {
-  const { value: displayed, ref } = useCountUp(value, 1400);
   return (
-    <div ref={ref} style={S.statPill}>
+    <div style={S.statPill}>
       <span style={{ fontSize: 20 }}>{icon}</span>
       <div>
-        <div style={S.statValue}>{displayed}</div>
+        <div style={S.statValue}>{value}</div>
         <div style={S.statLabel}>{label}</div>
       </div>
     </div>
@@ -145,7 +117,7 @@ function HomePage() {
             </h1>
 
             <p style={S.heroSub}>
-              Real-time flight data for professional sports teams. Know where your team is, 24/7.
+              Real-time flight data for professional basketball teams. Know where your team is, 24/7.
             </p>
 
             <div style={S.ctaRow}>
@@ -185,12 +157,13 @@ function HomePage() {
         <div style={S.eyebrow}>WHAT WE OFFER</div>
         <h2 style={S.sectionTitle}>Everything you need to<br />track team travel</h2>
         <div style={S.featGrid}>
-          <FeatureBlock icon="🔍" title="Team Search"        desc="Find any professional team by name, league, or flight callsign."                    accent="#1D4ED8" />
+          <FeatureBlock icon="🔍" title="Team Search"        desc="Find any professional basketball team by name, league, or flight callsign."          accent="#1D4ED8" />
           <FeatureBlock icon="📍" title="Real-time Position" desc="Live map positions updated continuously — see exactly where they are."               accent="#C8102E" />
           <FeatureBlock icon="✈️" title="Flight Status"      desc="Instantly know if a team is airborne, at the gate, or already landed."              accent="#FBBF24" />
-          <FeatureBlock icon="⭐" title="My Tracking List" desc="Save your favourite teams and get a personalised view of their flight status." accent="#22c55e" />
+          <FeatureBlock icon="⭐" title="My Tracking List"   desc="Save your favorite teams and get a personalized view of their flight status."       accent="#22c55e" />
         </div>
       </div>
+
       {/* ── TEAMS IN THE AIR ─────────────────────────────────── */}
       <div style={S.section}>
         <div style={S.eyebrow}>
@@ -204,22 +177,17 @@ function HomePage() {
         {flyingLoading ? (
           <TeamGridSkeleton count={3} />
         ) : flyingTeams.length > 0 ? (
-          <>
-            <div style={S.teamsGrid}>
-              {flyingTeams.map((team, i) => (
-                <TeamCard key={team.callsign || i} team={{ ...team, status: 'ACTIVE' }} />
-              ))}
-            </div>
-            <div style={{ textAlign: 'center', marginTop: 32 }}>
-              <Link to="/search" style={S.viewAll}>View All Teams →</Link>
-            </div>
-          </>
+          <div style={S.teamsGrid}>
+            {flyingTeams.map((team, i) => (
+              <TeamCard key={team.callsign || i} team={team} />
+            ))}
+          </div>
         ) : (
           <div style={S.emptyAir}>
-            <div style={{ fontSize: 56, animation: 'floatPlane 3s ease-in-out infinite' }}>✈️</div>
-            <h3 style={S.emptyTitle}>No teams currently in the air</h3>
+            <span style={{ fontSize: 40 }}>🛬</span>
+            <p style={S.emptyTitle}>No teams currently in the air</p>
             <p style={S.emptyBody}>
-              Flight data refreshes every 10 minutes. Check back soon, or browse all teams below.
+              Check back soon, or browse all teams below.
             </p>
             <Link to="/search" style={S.viewAll}>Browse All Teams →</Link>
           </div>
@@ -291,9 +259,8 @@ const S = {
   ticker: {
     background:'#0B2545', padding:'12px 24px',
     display:'flex', alignItems:'center', gap:4,
-    overflowX:'auto', whiteSpace:'nowrap',
-    fontSize:12, fontWeight:700, letterSpacing:'2px', color:'rgba(255,255,255,0.5)',
-    borderRadius:8, margin:'16px 0',
+    overflow:'hidden', margin:'20px 0',
+    borderRadius:8,
   },
   section:     { margin:'48px 0' },
   eyebrow:     { fontSize:11, fontWeight:700, letterSpacing:'3px', color:'#FBBF24', textTransform:'uppercase', marginBottom:8, display:'flex', alignItems:'center' },

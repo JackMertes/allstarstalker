@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FlightStatus from './FlightStatus';
 import teamService from '../../services/teamService';
-import { useFavourites } from '../../hooks/useFavourites';
+import { useFavorites } from '../../hooks/useFavorites';
 
 function getLocationDisplay(team) {
   if (team.origin && team.destination) return `${team.origin} → ${team.destination}`;
@@ -15,10 +15,10 @@ function TeamCard({ team }) {
   const navigate = useNavigate();
   const [showDetails, setShowDetails] = useState(false);
   const [loading, setLoading]         = useState(false);
-  const { isFavourite, toggle }       = useFavourites();
+  const { isFavorite, toggle }        = useFavorites();
 
   const isLive    = team.status === 'ACTIVE';
-  const isFav     = isFavourite(team.callsign);
+  const isFav     = isFavorite(team.callsign);
 
   const handleCheckStatus = async () => {
     setLoading(true);
@@ -46,11 +46,11 @@ function TeamCard({ team }) {
       {/* Live indicator dot */}
       <div className={`status-dot ${isLive ? 'live' : 'offline'}`} title={isLive ? 'Live' : 'Not flying'} />
 
-      {/* ── Star / favourite button ── */}
+      {/* ── Star / favorite button ── */}
       <button
         onClick={() => toggle(team.callsign)}
-        aria-label={isFav ? 'Remove from favourites' : 'Add to favourites'}
-        title={isFav ? 'Remove from favourites' : 'Add to favourites'}
+        aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
+        title={isFav ? 'Remove from favorites' : 'Add to favorites'}
         style={{
           position: 'absolute',
           top: 10,
@@ -81,73 +81,53 @@ function TeamCard({ team }) {
       {/* Main info */}
       <div className="card-body">
         <div className="card-location">
-          <span className="location-icon">{isLive ? '✈️' : '🏟️'}</span>
-          <div className="location-text">
-            <div className="location-label">{isLive ? 'In Flight' : 'Last Known Location'}</div>
-            <div className="location-value">{getLocationDisplay(team)}</div>
+          <span className="location-icon">{isLive ? '✈️' : '📍'}</span>
+          <div>
+            <span className="location-label">{isLive ? 'In Flight' : 'Location'}</span>
+            <span className="location-value">{getLocationDisplay(team)}</span>
           </div>
         </div>
+
+        <FlightStatus status={team.status} />
       </div>
 
-      {/* Show Details toggle */}
+      {/* Toggle details */}
       <button
         className="details-toggle"
         onClick={() => setShowDetails(prev => !prev)}
-        aria-expanded={showDetails}
       >
-        Show Details
-        <span className={`toggle-arrow ${showDetails ? 'open' : ''}`}>▼</span>
+        {showDetails ? 'Hide Details' : 'Show Details'}
+        <span className="toggle-arrow">{showDetails ? ' ▲' : ' ▼'}</span>
       </button>
 
-      {/* Collapsible detail rows */}
       {showDetails && (
         <div className="card-details">
-          <div className="detail-row">
-            <span className="detail-label">Callsign</span>
-            <span className="detail-value">{team.callsign}</span>
-          </div>
-          <div className="detail-row">
-            <span className="detail-label">Status</span>
-            <FlightStatus status={team.status} />
-          </div>
-          {team.category && (
-            <div className="detail-row">
-              <span className="detail-label">League</span>
-              <span className="detail-value">{team.category}</span>
-            </div>
-          )}
-          {team.origin && (
-            <div className="detail-row">
-              <span className="detail-label">Origin</span>
-              <span className="detail-value">{team.origin}</span>
-            </div>
-          )}
-          {team.destination && (
-            <div className="detail-row">
-              <span className="detail-label">Destination</span>
-              <span className="detail-value">{team.destination}</span>
-            </div>
-          )}
-          {team.aircraft && (
+          {team.aircraftType && (
             <div className="detail-row">
               <span className="detail-label">Aircraft</span>
-              <span className="detail-value">{team.aircraft}</span>
+              <span className="detail-value">{team.aircraftType}</span>
+            </div>
+          )}
+          {team.callsign && (
+            <div className="detail-row">
+              <span className="detail-label">Callsign</span>
+              <span className="detail-value">{team.callsign}</span>
             </div>
           )}
         </div>
       )}
 
-      {/* Action buttons */}
+      {/* Actions */}
       <div className="card-actions">
         <button
           className="btn btn-primary"
           onClick={handleCheckStatus}
           disabled={loading}
         >
-          {loading ? 'Checking…' : 'Check Status'}
+          {loading ? 'Loading…' : 'Check Status'}
         </button>
         <button className="btn btn-secondary" onClick={handleAddToTracking}>
-          Add to Tracking
+          + Track
         </button>
       </div>
     </div>

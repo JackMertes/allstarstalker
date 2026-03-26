@@ -2,12 +2,12 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 import { useDarkMode } from '../../hooks/useDarkMode';
-import { useFavourites } from '../../hooks/useFavourites';
+import { useFavorites } from '../../hooks/useFavorites';
 import '../../styles/Common.css';
 
 function Header() {
   const [isDark, toggleDark] = useDarkMode();
-  const { count: favCount } = useFavourites();
+  const { count: favCount } = useFavorites();
   const location = useLocation();
 
   const isActive = (path) =>

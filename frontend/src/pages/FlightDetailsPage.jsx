@@ -7,7 +7,7 @@ import teamService from '../services/teamService';
 import { getFlightStatus } from '../utils/mockData';
 
 // Toggle this to false once the backend is live
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 function FlightDetailsPage() {
   const { callsign } = useParams();
