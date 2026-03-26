@@ -1,83 +1,84 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import FlightStatus from './FlightStatus';
 import teamService from '../../services/teamService';
-import { getFlightStatus } from '../../utils/mockData';
-import { FlightStatus } from '.';
-import '../../styles/Flight.css';
-import '../../styles/Common.css';
+import { useFavourites } from '../../hooks/useFavourites';
 
-// Toggle to false when backend is ready
-const USE_MOCK = true;
-
-// Derives a readable location string from team data
 function getLocationDisplay(team) {
-  if (team.status === 'ACTIVE') return 'Currently Airborne';
-  if (team.lastAirport) return team.lastAirport;
-  if (team.origin)     return team.origin;
-  return 'Location unavailable';
+  if (team.origin && team.destination) return `${team.origin} → ${team.destination}`;
+  if (team.origin)                     return team.origin;
+  if (team.destination)                return team.destination;
+  return 'Location unknown';
 }
 
 function TeamCard({ team }) {
   const navigate = useNavigate();
-  const [loading, setLoading]       = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [loading, setLoading]         = useState(false);
+  const { isFavourite, toggle }       = useFavourites();
 
-  const isLive = team.status === 'ACTIVE';
+  const isLive    = team.status === 'ACTIVE';
+  const isFav     = isFavourite(team.callsign);
 
   const handleCheckStatus = async () => {
     setLoading(true);
     try {
-      let statusData;
-
-      if (USE_MOCK) {
-        await new Promise(res => setTimeout(res, 500));
-        statusData = getFlightStatus(team.callsign);
-      } else {
-        // Real API — returns { [callsign]: statusData }
-        const response = await teamService.checkStatus(team.callsign);
-        statusData = response[team.callsign];
-      }
-
-      if (statusData && statusData.is_flying) {
+      const response = await teamService.checkStatus(team.callsign);
+      const statusData = response[team.callsign];
+      if (statusData?.is_flying) {
         navigate(`/flight/${team.callsign}`, { state: { flightData: statusData } });
       } else {
-        alert(`${team.team} is not currently flying.`);
+        navigate(`/flight/${team.callsign}`);
       }
-    } catch (error) {
-      console.error('Error checking status:', error);
-      alert('Failed to check flight status. Please try again.');
+    } catch {
+      navigate(`/flight/${team.callsign}`);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddToTracking = async () => {
-    try {
-      if (USE_MOCK) {
-        await new Promise(res => setTimeout(res, 300));
-        alert(`${team.team} added to tracking!`);
-      } else {
-        await teamService.addTracking(team.callsign);
-        alert(`${team.team} added to tracking!`);
-      }
-    } catch (error) {
-      console.error('Error adding to tracking:', error);
-      alert('Failed to add to tracking. Please try again.');
-    }
+  const handleAddToTracking = () => {
+    console.log('Add to tracking:', team.callsign);
   };
 
   return (
-    <div className="flight-card">
-      {/* Live / offline indicator dot */}
-      <div className={`live-dot ${isLive ? 'live' : 'offline'}`} title={isLive ? 'Live' : 'Not flying'} />
+    <div className="team-card" style={{ position: 'relative' }}>
+      {/* Live indicator dot */}
+      <div className={`status-dot ${isLive ? 'live' : 'offline'}`} title={isLive ? 'Live' : 'Not flying'} />
+
+      {/* ── Star / favourite button ── */}
+      <button
+        onClick={() => toggle(team.callsign)}
+        aria-label={isFav ? 'Remove from favourites' : 'Add to favourites'}
+        title={isFav ? 'Remove from favourites' : 'Add to favourites'}
+        style={{
+          position: 'absolute',
+          top: 10,
+          right: 12,
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          fontSize: '20px',
+          lineHeight: 1,
+          padding: '2px 4px',
+          borderRadius: 6,
+          transition: 'transform 0.15s',
+          zIndex: 2,
+          filter: isFav ? 'none' : 'grayscale(1) opacity(0.45)',
+        }}
+        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.25)'}
+        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+      >
+        ⭐
+      </button>
 
       {/* Navy header bar */}
-      <div className="card-header">
+      <div className="card-header" style={{ paddingRight: 36 }}>
         <h3 className="card-team-name">{team.team}</h3>
         <span className="category-badge">{team.category}</span>
       </div>
 
-      {/* Main info: location at a glance */}
+      {/* Main info */}
       <div className="card-body">
         <div className="card-location">
           <span className="location-icon">{isLive ? '✈️' : '🏟️'}</span>

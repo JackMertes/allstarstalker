@@ -1,0 +1,232 @@
+/* =============================================================================
+   DARK MODE  —  data-theme="dark" on <body>
+   Strategy: explicit overrides per component class rather than remapping
+   shared variables (which caused navy-on-black unreadable text).
+   ============================================================================= */
+
+/* ── Page & layout ─────────────────────────────────────────────────────────── */
+[data-theme="dark"],
+[data-theme="dark"] body {
+  background-color: #0d1117;
+  color: #c9d1d9;
+}
+
+[data-theme="dark"] .app-container {
+  background-color: #0d1117;
+}
+
+[data-theme="dark"] .main-content {
+  background-color: #0d1117;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+/* Header is already navy — looks fine in dark mode, no changes needed */
+
+/* ── Footer ────────────────────────────────────────────────────────────────── */
+[data-theme="dark"] .footer {
+  background-color: #010409;
+  border-top: 1px solid #21262d;
+}
+
+[data-theme="dark"] .footer-name { color: #c9d1d9; }
+[data-theme="dark"] .footer-container p { color: #6e7681; }
+
+/* ── Buttons ───────────────────────────────────────────────────────────────── */
+[data-theme="dark"] .btn-secondary {
+  background-color: #21262d;
+  color: #c9d1d9;
+  border: 1px solid #30363d;
+}
+[data-theme="dark"] .btn-secondary:hover {
+  background-color: #30363d;
+  color: #e6edf3;
+}
+
+/* ── Team / Flight cards  (.flight-card) ───────────────────────────────────── */
+[data-theme="dark"] .flight-card {
+  background-color: #161b22;
+  border-color: #30363d;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* Card header bar keeps the existing navy gradient — looks great in dark mode */
+
+/* Card body surface */
+[data-theme="dark"] .card-body {
+  background-color: #161b22;
+}
+
+/* Location text — was jet-navy (#0B2545) on dark bg: invisible */
+[data-theme="dark"] .location-value {
+  color: #e6edf3;
+}
+[data-theme="dark"] .location-label {
+  color: #8b949e;
+}
+
+/* Show Details toggle */
+[data-theme="dark"] .details-toggle {
+  background-color: #161b22;
+  border-top-color: #30363d;
+  color: #58a6ff;   /* bright blue — readable on dark */
+}
+[data-theme="dark"] .details-toggle:hover {
+  background-color: #21262d;
+}
+[data-theme="dark"] .toggle-arrow {
+  color: #6e7681;
+}
+
+/* Collapsible details panel */
+[data-theme="dark"] .card-details {
+  background-color: #0d1117;
+  border-top-color: #30363d;
+}
+[data-theme="dark"] .detail-label {
+  color: #8b949e;
+}
+[data-theme="dark"] .detail-value {
+  color: #c9d1d9;
+}
+
+/* Card actions */
+[data-theme="dark"] .card-actions {
+  background-color: #161b22;
+}
+
+/* ── Search page ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .search-page h1,
+[data-theme="dark"] .search-page h2 {
+  color: #e6edf3;
+}
+[data-theme="dark"] .search-page p {
+  color: #8b949e;
+}
+
+[data-theme="dark"] .search-input {
+  background-color: #0d1117;
+  border-color: #30363d;
+  color: #c9d1d9;
+}
+[data-theme="dark"] .search-input:focus {
+  border-color: #58a6ff;
+}
+[data-theme="dark"] .search-input::placeholder {
+  color: #6e7681;
+}
+
+/* ── Empty state ───────────────────────────────────────────────────────────── */
+[data-theme="dark"] .empty-state {
+  background-color: #161b22;
+  border-color: #30363d;
+}
+[data-theme="dark"] .empty-state h3 { color: #e6edf3; }
+[data-theme="dark"] .empty-state p  { color: #8b949e; }
+
+/* ── Tracking page ─────────────────────────────────────────────────────────── */
+[data-theme="dark"] .tracking-page h1 {
+  color: #e6edf3;
+}
+[data-theme="dark"] .tracking-page > p {
+  color: #8b949e;
+}
+
+[data-theme="dark"] .tracking-list {
+  background-color: #161b22;
+  border-color: #30363d;
+}
+[data-theme="dark"] .tracking-list h2 {
+  color: #e6edf3;
+}
+
+/* ── Flight details page ───────────────────────────────────────────────────── */
+[data-theme="dark"] .flight-details {
+  background-color: #161b22;
+  border-color: #30363d;
+}
+[data-theme="dark"] .flight-details h2 {
+  color: #e6edf3;
+}
+
+[data-theme="dark"] .detail-item {
+  background-color: #0d1117;
+  border-color: #30363d;
+}
+[data-theme="dark"] .detail-item strong { color: #8b949e; }
+[data-theme="dark"] .detail-item span   { color: #c9d1d9; }
+
+/* ── Feature cards (home page) ─────────────────────────────────────────────── */
+[data-theme="dark"] .feature-card {
+  background-color: #161b22;
+  border-color: #30363d;
+}
+[data-theme="dark"] .feature-card h3 { color: #e6edf3; }
+[data-theme="dark"] .feature-card p  { color: #8b949e; }
+
+/* ── Results meta text ─────────────────────────────────────────────────────── */
+[data-theme="dark"] .results-meta { color: #8b949e; }
+
+/* ── Sort dropdown ─────────────────────────────────────────────────────────── */
+[data-theme="dark"] [class*="sort"],
+[data-theme="dark"] button[style*="border"] {
+  background-color: #21262d !important;
+  border-color: #30363d !important;
+  color: #c9d1d9 !important;
+}
+
+/* ── Inline inputs / forms ─────────────────────────────────────────────────── */
+[data-theme="dark"] input:not([type="checkbox"]),
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: #0d1117;
+  border-color: #30363d;
+  color: #c9d1d9;
+}
+[data-theme="dark"] input::placeholder { color: #6e7681; }
+
+/* ── Generic white panels that use inline styles ───────────────────────────── */
+/* Targets the tracking-list white card bg written inline in TrackingList.jsx */
+[data-theme="dark"] [style*="background: white"],
+[data-theme="dark"] [style*="background-color: white"],
+[data-theme="dark"] [style*="background:#fff"],
+[data-theme="dark"] [style*="background: #fff"] {
+  background-color: #161b22 !important;
+  border-color: #30363d !important;
+  color: #c9d1d9 !important;
+}
+
+/* ── Skeleton loading shimmer in dark mode ─────────────────────────────────── */
+[data-theme="dark"] {
+  --sk-base:    #21262d;
+  --sk-shine:   #30363d;
+  --sk-card-bg: #161b22;
+  --sk-header:  #1c2128;
+  --sk-border:  #30363d;
+}
+
+/* ── Dark mode toggle button ───────────────────────────────────────────────── */
+.dark-toggle {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #c0c7d1;
+  transition: background 0.2s, color 0.2s;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+.dark-toggle:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+.dark-toggle-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
