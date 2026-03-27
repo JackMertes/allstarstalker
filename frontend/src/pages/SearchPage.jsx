@@ -4,7 +4,7 @@ import TeamList from '../components/flight/TeamList';
 import { TeamGridSkeleton } from '../components/common/TeamCardSkeleton';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { useApp } from '../context/AppContext';
-import { useFavourites } from '../hooks/useFavourites';
+import { useFavorites } from '../hooks/useFavorites';
 import teamService from '../services/teamService';
 import { mockTeams, searchTeams } from '../utils/mockData';
 import { filterTeamsBySearchTerm } from '../utils/teamApiMapper';
@@ -50,8 +50,8 @@ function SearchPage() {
     searchResults, setSearchResults,
   } = useApp();
 
-  const { isFavourite } = useFavourites();
-  const [sortMode, setSortMode]       = useState('active');
+  const { isFavorite } = useFavorites();
+  const [sortMode, setSortMode]         = useState('active');
   const [showSortMenu, setShowSortMenu] = useState(false);
   /** Full list from API (or mock); search filters this without re-fetching */
   const [allTeamsCache, setAllTeamsCache] = useState(null);
@@ -106,8 +106,8 @@ function SearchPage() {
   const sorted = sortTeams(searchResults || [], sortMode);
 
   // Teams the user has starred
-  const favouriteTeams = sorted.filter(t => isFavourite(t.callsign));
-  const otherTeams     = sorted.filter(t => !isFavourite(t.callsign));
+  const favoriteTeams = sorted.filter(t => isFavorite(t.callsign));
+  const otherTeams    = sorted.filter(t => !isFavorite(t.callsign));
 
   return (
     <div className="search-page">
@@ -127,41 +127,36 @@ function SearchPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0 16px', flexWrap: 'wrap', gap: 8 }}>
           <span style={{ fontSize: 14, color: 'var(--runway-gray)', fontWeight: 500 }}>
             {sorted.length} team{sorted.length !== 1 ? 's' : ''}
-            {searchTerm && ` matching "${searchTerm}"`}
-            {favouriteTeams.length > 0 && ` · ${favouriteTeams.length} ⭐`}
           </span>
+
           <div style={{ position: 'relative' }}>
             <button
-              onClick={() => setShowSortMenu(p => !p)}
+              onClick={() => setShowSortMenu(prev => !prev)}
               style={{
-                background: 'var(--white, white)',
-                border: '1px solid var(--cloud-gray, #e5e7eb)',
-                borderRadius: 8,
-                padding: '7px 14px',
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: 'pointer',
-                color: 'var(--charcoal, #111)',
-                display: 'flex', alignItems: 'center', gap: 6,
+                fontSize: 13, fontWeight: 600, padding: '6px 14px',
+                border: '1px solid var(--cloud-gray)', borderRadius: 8,
+                background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
               }}
             >
-              {SORT_OPTIONS.find(o => o.value === sortMode)?.label} ▾
+              Sort: {SORT_OPTIONS.find(o => o.value === sortMode)?.label}
+              <span style={{ fontSize: 10 }}>▼</span>
             </button>
+
             {showSortMenu && (
               <div style={{
-                position: 'absolute', right: 0, top: '110%', zIndex: 50,
-                background: 'var(--white, white)',
-                border: '1px solid var(--cloud-gray, #e5e7eb)',
-                borderRadius: 8,
-                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-                minWidth: 140, overflow: 'hidden',
+                position: 'absolute', top: '110%', right: 0, zIndex: 50,
+                background: 'white', border: '1px solid var(--cloud-gray)',
+                borderRadius: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                minWidth: 160, overflow: 'hidden',
               }}>
                 {SORT_OPTIONS.map(opt => (
-                  <button key={opt.value}
+                  <button
+                    key={opt.value}
                     onClick={() => { setSortMode(opt.value); setShowSortMenu(false); }}
                     style={{
                       display: 'block', width: '100%', textAlign: 'left',
-                      padding: '10px 16px', border: 'none', cursor: 'pointer', fontSize: 14,
+                      padding: '10px 16px', border: 'none', cursor: 'pointer',
+                      fontSize: 14,
                       fontWeight: sortMode === opt.value ? 700 : 400,
                       background: sortMode === opt.value ? 'var(--off-white, #e5efff)' : 'transparent',
                       color: 'var(--charcoal, #111)',
@@ -179,20 +174,20 @@ function SearchPage() {
       {/* ── Skeleton while loading ── */}
       {loading && <TeamGridSkeleton count={8} />}
 
-      {/* ── Favourites strip ── */}
-      {!loading && favouriteTeams.length > 0 && (
+      {/* ── Favorites strip ── */}
+      {!loading && favoriteTeams.length > 0 && (
         <div style={{ marginBottom: 36 }}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
             marginBottom: 16,
           }}>
             <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '3px', color: '#FBBF24', textTransform: 'uppercase' }}>
-              ⭐ FAVOURITES
+              ⭐ FAVORITES
             </span>
             <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg,#FBBF2440,transparent)' }} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
-            {favouriteTeams.map((team, i) => (
+            {favoriteTeams.map((team, i) => (
               <TeamCard key={team.callsign || i} team={team} />
             ))}
           </div>
@@ -202,7 +197,7 @@ function SearchPage() {
       {/* ── All other teams ── */}
       {!loading && (
         <>
-          {favouriteTeams.length > 0 && otherTeams.length > 0 && (
+          {favoriteTeams.length > 0 && otherTeams.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '3px', color: 'var(--runway-gray)', textTransform: 'uppercase' }}>
                 ALL TEAMS

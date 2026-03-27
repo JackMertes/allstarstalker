@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-const STORAGE_KEY = 'star-stalker-favourites';
+const STORAGE_KEY = 'star-stalker-favorites';
 
 function load() {
   try {
@@ -18,14 +18,14 @@ function save(set) {
 }
 
 /**
- * Manages a persisted Set of favourite team callsigns.
- * Returns { favourites, toggle, isFavourite, count }
+ * Manages a persisted Set of favorite team callsigns.
+ * Returns { favorites, toggle, isFavorite, count }
  */
-export function useFavourites() {
-  const [favourites, setFavourites] = useState(load);
+export function useFavorites() {
+  const [favorites, setFavorites] = useState(load);
 
   const toggle = useCallback((callsign) => {
-    setFavourites(prev => {
+    setFavorites(prev => {
       const next = new Set(prev);
       next.has(callsign) ? next.delete(callsign) : next.add(callsign);
       save(next);
@@ -33,10 +33,10 @@ export function useFavourites() {
     });
   }, []);
 
-  const isFavourite = useCallback(
-    (callsign) => favourites.has(callsign),
-    [favourites]
+  const isFavorite = useCallback(
+    (callsign) => favorites.has(callsign),
+    [favorites]
   );
 
-  return { favourites, toggle, isFavourite, count: favourites.size };
+  return { favorites, toggle, isFavorite, count: favorites.size };
 }
