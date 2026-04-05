@@ -43,6 +43,7 @@ function StatPill({ icon, value, label }) {
 // ── Feature block ─────────────────────────────────────────────────────────────
 function FeatureBlock({ icon, title, desc, accent }) {
   const [hov, setHov] = useState(false);
+  const isDark = useDarkMode();
   return (
     <div
       style={{ ...S.featureBlock, ...(hov ? S.featureBlockHov : {}) }}
@@ -51,7 +52,10 @@ function FeatureBlock({ icon, title, desc, accent }) {
     >
       <div style={{ ...S.featureBar, background: accent }} />
       <span style={{ fontSize: 28, marginBottom: 12, display: 'block' }}>{icon}</span>
-      <h3 style={S.featureTitle}>{title}</h3>
+      <h3 style={{
+        ...S.featureTitle,
+        color: `${isDark ? 'white' : '#0B2545'} !important`,
+      }}>{title}</h3>
       <p style={S.featureDesc}>{desc}</p>
     </div>
   );
@@ -70,9 +74,24 @@ function LiveDot({ green }) {
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
+
+function useDarkMode() {
+  const [isDark, setIsDark] = useState(() =>
+    window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e) => setIsDark(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return isDark;
+}
+
 function HomePage() {
   const [flyingTeams,   setFlyingTeams]   = useState([]);
   const [flyingLoading, setFlyingLoading] = useState(true);
+  const isDark = useDarkMode();
 
   useEffect(() => { fetchFlyingTeams(); }, []);
 
@@ -155,7 +174,12 @@ function HomePage() {
       {/* ── FEATURES ─────────────────────────────────────────── */}
       <div style={S.section}>
         <div style={S.eyebrow}>WHAT WE OFFER</div>
-        <h2 style={S.sectionTitle}>Everything you need to<br />track team travel</h2>
+        <h2 style={{
+          ...S.sectionTitle,
+          color: `${isDark ? 'white' : '#0B2545'} !important`,
+        }}>
+          Everything you need to<br />track team travel
+        </h2>
         <div style={S.featGrid}>
           <FeatureBlock icon="🔍" title="Team Search"        desc="Find any professional basketball team by name, league, or flight callsign."          accent="#1D4ED8" />
           <FeatureBlock icon="📍" title="Real-time Position" desc="Live map positions updated continuously — see exactly where they are."               accent="#C8102E" />
@@ -172,7 +196,12 @@ function HomePage() {
             : 'LIVE NOW'
           }
         </div>
-        <h2 style={S.sectionTitle}>Teams In The Air</h2>
+        <h2 style={{
+          ...S.sectionTitle,
+          color: `${isDark ? 'white' : '#0B2545'} !important`,
+        }}>
+          Teams In The Air
+        </h2>
 
         {flyingLoading ? (
           <TeamGridSkeleton count={3} />
@@ -185,7 +214,10 @@ function HomePage() {
         ) : (
           <div style={S.emptyAir}>
             <span style={{ fontSize: 40 }}>🛬</span>
-            <p style={S.emptyTitle}>No teams currently in the air</p>
+            <p style={{
+              ...S.emptyTitle,
+              color: `${isDark ? 'white' : '#0B2545'} !important`,
+            }}>No teams currently in the air</p>
             <p style={S.emptyBody}>
               Check back soon, or browse all teams below.
             </p>
@@ -257,14 +289,21 @@ const S = {
   heroLogo:    { width:130, height:130, objectFit:'contain' },
   logoCaption: { fontSize:10, fontWeight:700, letterSpacing:'3px', color:'rgba(255,255,255,0.35)' },
   ticker: {
-    background:'#0B2545', padding:'12px 24px',
+    background:'#0B2545',
+    color: 'white',
+    padding:'12px 24px',
     display:'flex', alignItems:'center', gap:4,
     overflow:'hidden', margin:'20px 0',
     borderRadius:8,
   },
   section:     { margin:'48px 0' },
   eyebrow:     { fontSize:11, fontWeight:700, letterSpacing:'3px', color:'#FBBF24', textTransform:'uppercase', marginBottom:8, display:'flex', alignItems:'center' },
-  sectionTitle:{ fontSize:'clamp(22px,3.5vw,32px)', fontWeight:800, color:'#0B2545', margin:'0 0 32px', lineHeight:1.2 },
+  sectionTitle: {
+    fontSize: 'clamp(22px,3.5vw,32px)',
+    fontWeight: 800,
+    margin: '0 0 32px',
+    lineHeight: 1.2,
+  },
   featGrid:    { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))', gap:20 },
   featureBlock:{ background:'white', borderRadius:12, padding:24, boxShadow:'0 2px 12px rgba(0,0,0,0.05)', border:'1px solid #e8ecf0', position:'relative', overflow:'hidden', transition:'transform 0.2s, box-shadow 0.2s' },
   featureBlockHov: { transform:'translateY(-3px)', boxShadow:'0 8px 24px rgba(0,0,0,0.10)' },
