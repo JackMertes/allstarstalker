@@ -13,8 +13,7 @@ function getLocationDisplay(team) {
 
 function TeamCard({ team }) {
   const navigate = useNavigate();
-  const [showDetails, setShowDetails] = useState(false);
-  const [loading, setLoading]         = useState(false);
+  const [loading, setLoading] = useState(false);
   const { isFavorite, toggle }        = useFavorites();
 
   const isLive    = team.status === 'ACTIVE';
@@ -79,6 +78,13 @@ function TeamCard({ team }) {
         <span className="category-badge">{team.category}</span>
       </div>
 
+      {/* Callsign */}
+      {team.callsign && (
+        <div style={{ padding: '6px 16px 0', fontSize: 12, color: '#8a98a8', fontFamily: 'monospace', letterSpacing: '0.5px' }}>
+          {team.callsign}
+        </div>
+      )}
+
       {/* Main info */}
       <div className="card-body">
         <div className="card-location">
@@ -92,32 +98,6 @@ function TeamCard({ team }) {
         <FlightStatus status={team.status} />
       </div>
 
-      {/* Toggle details */}
-      <button
-        className="details-toggle"
-        onClick={() => setShowDetails(prev => !prev)}
-      >
-        {showDetails ? 'Hide Details' : 'Show Details'}
-        <span className="toggle-arrow">{showDetails ? ' ▲' : ' ▼'}</span>
-      </button>
-
-      {showDetails && (
-        <div className="card-details">
-          {team.aircraftType && (
-            <div className="detail-row">
-              <span className="detail-label">Aircraft</span>
-              <span className="detail-value">{team.aircraftType}</span>
-            </div>
-          )}
-          {team.callsign && (
-            <div className="detail-row">
-              <span className="detail-label">Callsign</span>
-              <span className="detail-value">{team.callsign}</span>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Actions */}
       <div className="card-actions">
         <button
@@ -125,7 +105,7 @@ function TeamCard({ team }) {
           onClick={handleCheckStatus}
           disabled={loading}
         >
-          {loading ? 'Loading…' : 'Check Status'}
+          {loading ? 'Loading…' : 'Show Details'}
         </button>
         <button className="btn btn-secondary" onClick={handleAddToTracking}>
           + Track
