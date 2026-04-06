@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
  * Directs HTTP requests mapped to "/api/tracking/..." to the proper endpoints
  * Services in this module respond to GET / POST / DELETE requests.
  * In Progress (note to self - needs documentation, and fully implemented methods).
+ *  - User is not implemented, cannot 
  */
 @RestController
 @RequestMapping("/api/tracking")
@@ -34,6 +35,10 @@ public class TrackingController {
         this.mock = mock;
     }
 
+    /**
+     * 
+     * @return
+     */
     @GetMapping("")
     public ResponseEntity<?> getAllTracking() {
         try {
@@ -43,8 +48,15 @@ public class TrackingController {
         } catch (Exception e) {
             return ResponseEntity.ok(mock.getUserTrackings());
         }
+
+
+
     }
     
+    /**
+     * 
+     * @return
+     */
     @PostMapping("") //@GetMapping("/user/{userId}")
     public ResponseEntity<?> addTracking(/*@PathVariable int userId*/) {
         /*try {

@@ -1,7 +1,7 @@
 package com.university.backend;
 
 // import org.apache.catalina.connector.Response;
-import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.beans.factory.annotation.Autowired;
 // import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +27,6 @@ import java.util.List;
 public class FlightController {
 
     /** Used to query about flights */
-    // @Autowired
     private FlightRepository repo;
 
     /**
