@@ -40,8 +40,10 @@ function FlightDetailsPage() {
         statusData = response[callsign];
       }
 
-      if (!statusData || !statusData.is_flying) {
-        setError('This team is not currently flying.');
+      if (!statusData) {
+        setError('Could not load flight data for this team.');
+      } else if (!statusData.is_flying && !statusData.raw) {
+        setError('No flight data available for this team yet.');
       } else {
         setFlightData(statusData);
       }

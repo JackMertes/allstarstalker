@@ -25,6 +25,7 @@ function FlightDetails({ flightData }) {
     return <div>No flight data available</div>;
   }
 
+  const isFlying = flightData.is_flying;
   const aircraft = flightData.raw.ac[0];
   const position = [aircraft.lat, aircraft.lon];
 
@@ -33,20 +34,33 @@ function FlightDetails({ flightData }) {
       {/* Header Section */}
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ margin: '0 0 8px 0' }}>{flightData.team}</h1>
-        <span style={{ 
-          backgroundColor: '#2ecc71', 
-          color: 'white', 
-          padding: '6px 12px', 
-          borderRadius: '4px',
-          fontWeight: '600',
-          fontSize: '14px'
-        }}>
-          FLYING
-        </span>
+        {isFlying ? (
+          <span style={{
+            backgroundColor: '#2ecc71',
+            color: 'white',
+            padding: '6px 12px',
+            borderRadius: '4px',
+            fontWeight: '600',
+            fontSize: '14px'
+          }}>
+            FLYING
+          </span>
+        ) : (
+          <span style={{
+            backgroundColor: '#e67e22',
+            color: 'white',
+            padding: '6px 12px',
+            borderRadius: '4px',
+            fontWeight: '600',
+            fontSize: '14px'
+          }}>
+            NOT FLYING — Last Known Position
+          </span>
+        )}
       </div>
 
-      {/* Live Map Section */}
-      <h2 style={{ marginTop: '32px' }}>Live Flight Map</h2>
+      {/* Map Section */}
+      <h2 style={{ marginTop: '32px' }}>{isFlying ? 'Live Flight Map' : 'Last Known Location'}</h2>
       <div style={{ 
         height: '350px', 
         width: '100%', 
@@ -112,8 +126,8 @@ function FlightDetails({ flightData }) {
         </div>
       </div>
 
-      {/* Current Position Section (All original fields restored) */}
-      <h2 style={{ marginTop: '32px' }}>Current Position</h2>
+      {/* Position Section */}
+      <h2 style={{ marginTop: '32px' }}>{isFlying ? 'Current Position' : 'Last Known Position'}</h2>
       <div style={{ background: '#f8f9fa', padding: '24px', borderRadius: '8px' }}>
         <div className="details-grid">
           <div className="detail-item">
@@ -146,15 +160,32 @@ function FlightDetails({ flightData }) {
           </div>
           <div className="detail-item">
             <strong>Last Seen</strong>
-            <span>{aircraft.seen ? `${aircraft.seen.toFixed(1)}s ago` : 'N/A'}</span>
+            <span>
+              {isFlying && aircraft.seen
+                ? `${aircraft.seen.toFixed(1)}s ago`
+                : flightData.last_seen
+                  ? new Date(flightData.last_seen).toLocaleString()
+                  : 'N/A'}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Footer Timestamp */}
-      <div style={{ marginTop: '16px', padding: '16px', background: '#e8f4f8', borderRadius: '8px' }}>
+      <div style={{
+        marginTop: '16px',
+        padding: '16px',
+        background: isFlying ? '#e8f4f8' : '#fef3e2',
+        borderRadius: '8px'
+      }}>
         <p style={{ margin: 0, fontSize: '14px', color: '#2c3e50' }}>
-          <strong>Last Updated:</strong> {new Date(flightData.last_seen).toLocaleString()}
+          <strong>{isFlying ? 'Last Updated:' : 'Last Seen:'}</strong>{' '}
+          {flightData.last_seen ? new Date(flightData.last_seen).toLocaleString() : 'Unknown'}
+          {!isFlying && (
+            <span style={{ marginLeft: '12px', color: '#e67e22', fontStyle: 'italic' }}>
+              (not currently flying)
+            </span>
+          )}
         </p>
       </div>
     </div>

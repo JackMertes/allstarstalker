@@ -98,7 +98,13 @@ public class TeamController {
 
             flightOpt.ifPresent(f -> {
                 if (f.getStatus() != null) {
-                    teamDataSet.put("status", f.getStatus());
+                    String status = f.getStatus();
+                    // Distinguish "not flying but has last known position" from "truly no data"
+                    boolean hasPosition = f.getLiveLatitude() != null && f.getLiveLongitude() != null;
+                    if ("UNKNOWN".equals(status) && hasPosition) {
+                        status = "NOT_FLYING";
+                    }
+                    teamDataSet.put("status", status);
                 }
                 String origin = airportLabel(f.getDepartureAirportId());
                 String dest = airportLabel(f.getArrivalAirportId());

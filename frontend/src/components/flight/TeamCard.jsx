@@ -25,7 +25,8 @@ function TeamCard({ team }) {
     try {
       const response = await teamService.checkStatus(team.callsign);
       const statusData = response[team.callsign];
-      if (statusData?.is_flying) {
+      // Pass data in navigation state whenever we have any position data (flying or last known)
+      if (statusData?.raw) {
         navigate(`/flight/${team.callsign}`, { state: { flightData: statusData } });
       } else {
         navigate(`/flight/${team.callsign}`);
