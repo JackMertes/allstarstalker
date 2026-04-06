@@ -5,9 +5,9 @@ Schema is managed by **Flyway** in the backend: migrations in `backend/src/main/
 ## Do we have “code” for the tables?
 
 - **SQL (schema):** Yes. The tables are defined in the **Flyway migration scripts** (V1–V4). That *is* the definition of the database schema; it lives in the repo and is applied when the app starts.
-- **Java entities (JPA):** Not yet. The backend does not have `@Entity` classes (e.g. `Team`, `Flight`) that map to these tables. Those will be added later (see BACKEND_ISSUES). For now, the database is created and seeded by Flyway; the app can use it via JDBC or once entities/repositories are added.
+- **Java entities (JPA):** Yes. The backend has `@Entity` classes (`Team`, `Flight`, `Airport`, `TeamFlight`, etc.) in `backend/src/main/java/…/entities/` that map to these tables via Spring Data JPA.
 
-So: the **tables** are defined and created by the **SQL in the migrations**. There is no separate “table code” elsewhere; the migrations are the source of truth.
+The migrations are the source of truth for schema; the JPA entities reflect that schema in Java.
 
 ## What code runs the migrations, and when?
 

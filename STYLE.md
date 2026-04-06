@@ -1,6 +1,6 @@
   # STYLE.md
 
-## Project: Celebrity Flight Log Viewer
+## Project: Star Stalker — NBA Team Flight Tracker
 
 This document defines coding standards, formatting conventions, and design principles for this project.
 
@@ -20,9 +20,9 @@ This document defines coding standards, formatting conventions, and design princ
 
 | Element | Convention | Example |
 |---|---|---|
-| Variables | `camelCase` | `celebrityName`, `startDate` |
+| Variables | `camelCase` | `teamName`, `startDate` |
 | Functions | `camelCase` | `getFlightLogs()`, `filterByAirport()` |
-| Classes/Types | `PascalCase` | `FlightLog`, `CelebrityProfile` |
+| Classes/Types | `PascalCase` | `FlightLog`, `TeamProfile` |
 | Constants | `UPPER_SNAKE_CASE` | `MAX_RESULTS`, `DEFAULT_PAGE_SIZE` |
 | Files | `kebab-case` (preferred) | `flight-service.ts`, `date-utils.js` |
 | Directories | `kebab-case` | `data-access/`, `api/` |
@@ -36,15 +36,15 @@ Notes:
 ## 3. Formatting
 
 ### 3.1 Indentation & whitespace
-- JavaScript/TypeScript: **2 spaces** indentation.
-- Python: **4 spaces** indentation.
+- JavaScript (React): **2 spaces** indentation.
+- Java (Spring Boot): **4 spaces** indentation.
 - No trailing whitespace.
 - One blank line between logical sections.
 - Max line length: **100** characters (unless a URL forces longer).
 
 ### 3.2 Quotes
-- JS/TS: single quotes `'` unless the string contains `'`.
-- Python: either `'` or `"` consistently per file.
+- JavaScript: single quotes `'` unless the string contains `'`.
+- Java: double quotes `"` (language default).
 
 ---
 
@@ -119,22 +119,34 @@ Security:
 
 ## 7. Project structure
 
-Recommended layout:
+The repository is split into two independently runnable apps:
 
+**Backend** (`backend/src/main/java/…`):
 ```
-/src
-  /api          # route handlers / controllers
-  /services     # business logic (fetch, filter, aggregate)
-  /data-access  # database and external-provider integrations
-  /models       # types, schemas, entities
-  /utils        # pure helpers
-  index.ts|js
-/tests
+controllers/    REST endpoint handlers — no business logic
+services/       Business logic (flight refresh, scheduling, mock data)
+repositories/   Spring Data JPA interfaces
+entities/       JPA entity classes (Team, Flight, Airport, …)
+dto/            External API response shapes (AirplanesLive)
+config/         Spring configuration (Flyway, CORS, RestTemplate)
+```
+
+**Frontend** (`frontend/src/`):
+```
+components/
+  common/       Header, Footer, skeletons, error messages
+  flight/       TeamCard, TeamList, FlightSearch, FlightStatus, FlightMap
+context/        AppContext (shared loading/error/search state)
+hooks/          useFavorites, useDarkMode
+pages/          HomePage, SearchPage, FlightDetailsPage, TrackingPage
+services/       teamService (API calls)
+styles/         App.css, Common.css, Flight.css, dark-mode.css
+utils/          mockData, teamApiMapper, constants, formatters, validators
 ```
 
 Rules:
-- `api/` must not contain business logic.
-- `services/` must not import UI code.
+- Controllers must not contain business logic.
+- Services must not import UI code.
 - Keep modules acyclic when possible.
 
 ---
