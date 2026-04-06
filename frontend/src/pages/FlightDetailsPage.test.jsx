@@ -1,13 +1,14 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import FlightDetailsPage from './FlightDetailsPage';
-import { getFlightStatus } from '../utils/mockData';
+import teamService from '../services/teamService';
 
-// Mock the mockData module so we control what getFlightStatus returns in each test
-jest.mock('../utils/mockData', () => ({
-  getFlightStatus: jest.fn(),
+jest.mock('../services/teamService', () => ({
+  __esModule: true,
+  default: {
+    checkStatus: jest.fn(),
+  },
 }));
 
 const flyingData = {
@@ -71,9 +72,8 @@ describe('FlightDetailsPage', () => {
   });
 
   it('shows the loading spinner when no location state and fetch is pending', () => {
-    // Make getFlightStatus return a value but the 300 ms delay means loading is
-    // still true on the very first render frame
-    getFlightStatus.mockReturnValue(flyingData);
+    // Keep request pending to assert initial loading state.
+    teamService.checkStatus.mockReturnValue(new Promise(() => {}));
 
     renderPage('DAL8924'); // no location.state → loading = true initially
 
@@ -81,41 +81,43 @@ describe('FlightDetailsPage', () => {
   });
 
   it('displays flight details after fetching a flying team', async () => {
-    getFlightStatus.mockReturnValue(flyingData);
+    teamService.checkStatus.mockResolvedValue({ DAL8924: flyingData });
 
     renderPage('DAL8924');
 
-    // findByText waits for async state updates (incl. the 300 ms mock delay)
     expect(await screen.findByText('Denver Nuggets')).toBeInTheDocument();
     expect(screen.getByText('FLYING')).toBeInTheDocument();
   });
 
   it('shows an error when the fetched team is not currently flying', async () => {
-    getFlightStatus.mockReturnValue({ is_flying: false, callsign: 'DAL8924' });
+    teamService.checkStatus.mockResolvedValue({
+      DAL8924: { is_flying: false, callsign: 'DAL8924' },
+    });
 
     renderPage('DAL8924');
 
     expect(
-      await screen.findByText(/not currently flying/i)
+      await screen.findByText(/no flight data available for this team yet/i)
     ).toBeInTheDocument();
   });
 
   it('shows "Back to Search" button after a not-flying error', async () => {
-    getFlightStatus.mockReturnValue({ is_flying: false, callsign: 'DAL8924' });
+    teamService.checkStatus.mockResolvedValue({
+      DAL8924: { is_flying: false, callsign: 'DAL8924' },
+    });
 
     renderPage('DAL8924');
 
     expect(await screen.findByText('Back to Search')).toBeInTheDocument();
   });
 
-  it('shows "Flight not found" when getFlightStatus returns null', async () => {
-    getFlightStatus.mockReturnValue(null);
+  it('shows a fetch error when checkStatus has no callsign result', async () => {
+    teamService.checkStatus.mockResolvedValue({});
 
     renderPage('DAL8924');
 
-    // null statusData triggers the not-flying error path
     expect(
-      await screen.findByText(/not currently flying/i)
+      await screen.findByText(/could not load flight data for this team/i)
     ).toBeInTheDocument();
   });
 });
