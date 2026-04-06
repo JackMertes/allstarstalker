@@ -68,6 +68,56 @@ public class TeamController {
     }
 
     /**
+     * Handles GET requests to "/api/teams/flying" and returns only teams with an ACTIVE flight.
+     * Uses the same shape as /api/teams so the frontend can render TeamCards directly.
+     *
+     * @return ResponseEntity<?> holding a status code and encapsulated body
+     */
+    @GetMapping("/flying")
+    public ResponseEntity<List<Map<String, String>>> getFlyingTeams() {
+        List<Flight> activeFlights = flightRepo.findByStatus("ACTIVE");
+        if (activeFlights.isEmpty()) {
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+
+        List<Map<String, String>> teamMappings = new ArrayList<>();
+
+        for (Flight f : activeFlights) {
+            Optional<Team> teamOpt = (f.getCallsign() != null && !f.getCallsign().isBlank())
+                    ? repo.findByCallsign(f.getCallsign().trim())
+                    : Optional.empty();
+            if (teamOpt.isEmpty()) continue;
+
+            Team t = teamOpt.get();
+            Map<String, String> row = new HashMap<>();
+            row.put("teamName", t.getName());
+            row.put("teamId", t.getNbaTeamId());
+            row.put("division", t.getDivision());
+            row.put("city", t.getCity());
+            row.put("callSign", f.getCallsign());
+            row.put("status", "ACTIVE");
+
+            if (f.getAircraftType() != null && !f.getAircraftType().isBlank()) {
+                row.put("aircraftType", f.getAircraftType());
+            }
+
+            String origin = airportLabel(f.getDepartureAirportId());
+            String dest   = airportLabel(f.getArrivalAirportId());
+            if (origin != null) row.put("origin", origin);
+            if (dest   != null) row.put("destination", dest);
+
+            if (origin == null && dest == null) {
+                String pos = formatLivePosition(f.getLiveLatitude(), f.getLiveLongitude());
+                if (pos != null) row.put("origin", "In flight · " + pos);
+            }
+
+            teamMappings.add(row);
+        }
+
+        return ResponseEntity.ok(teamMappings);
+    }
+
+    /**
      * Handles GET requests to "/api/teams" and provides a ResonseEntity
      * encapsulating a list where each member is the mapped data of a team.
      * 
