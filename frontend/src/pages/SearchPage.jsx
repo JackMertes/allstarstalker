@@ -20,7 +20,7 @@ const SORT_OPTIONS = [
   { value: 'za',     label: 'Z → A'        },
 ];
 
-const STATUS_RANK = { ACTIVE: 0, LANDED: 1, UNKNOWN: 2 };
+const STATUS_RANK = { ACTIVE: 0, LANDED: 1, NOT_FLYING: 2, UNKNOWN: 3 };
 
 function teamSortKey(t) {
   return (t && t.team) ? String(t.team) : '';

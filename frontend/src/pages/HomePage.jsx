@@ -4,9 +4,10 @@ import logo from '../assets/logo.png';
 import { TeamGridSkeleton } from '../components/common/TeamCardSkeleton';
 import { TeamCard } from '../components/flight';
 import { mockTeams } from '../utils/mockData';
+import { normalizeTeamsFromApi } from '../utils/teamApiMapper';
 
 const USE_MOCK = false;
-const BASE     = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+const BASE     = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
 
 // ── Animated flight dots (decorative) ────────────────────────────────────────
 function FlightDots() {
@@ -104,7 +105,7 @@ function HomePage() {
       } else {
         const res = await fetch(`${BASE}/teams/flying`);
         const data = await res.json();
-        setFlyingTeams(Array.isArray(data) ? data : []);
+        setFlyingTeams(normalizeTeamsFromApi(Array.isArray(data) ? data : []));
       }
     } catch {
       setFlyingTeams([]);
@@ -171,23 +172,6 @@ function HomePage() {
         ))}
       </div>
 
-      {/* ── FEATURES ─────────────────────────────────────────── */}
-      <div style={S.section}>
-        <div style={S.eyebrow}>WHAT WE OFFER</div>
-        <h2 style={{
-          ...S.sectionTitle,
-          color: `${isDark ? 'white' : '#0B2545'} !important`,
-        }}>
-          Everything you need to<br />track team travel
-        </h2>
-        <div style={S.featGrid}>
-          <FeatureBlock icon="🔍" title="Team Search"        desc="Find any professional basketball team by name, league, or flight callsign."          accent="#1D4ED8" />
-          <FeatureBlock icon="📍" title="Real-time Position" desc="Live map positions updated continuously — see exactly where they are."               accent="#C8102E" />
-          <FeatureBlock icon="✈️" title="Flight Status"      desc="Instantly know if a team is airborne, at the gate, or already landed."              accent="#FBBF24" />
-          <FeatureBlock icon="⭐" title="My Tracking List"   desc="Save your favorite teams and get a personalized view of their flight status."       accent="#22c55e" />
-        </div>
-      </div>
-
       {/* ── TEAMS IN THE AIR ─────────────────────────────────── */}
       <div style={S.section}>
         <div style={S.eyebrow}>
@@ -224,6 +208,23 @@ function HomePage() {
             <Link to="/search" style={S.viewAll}>Browse All Teams →</Link>
           </div>
         )}
+      </div>
+
+      {/* ── FEATURES ─────────────────────────────────────────── */}
+      <div style={S.section}>
+        <div style={S.eyebrow}>WHAT WE OFFER</div>
+        <h2 style={{
+          ...S.sectionTitle,
+          color: `${isDark ? 'white' : '#0B2545'} !important`,
+        }}>
+          Everything you need to<br />track team travel
+        </h2>
+        <div style={S.featGrid}>
+          <FeatureBlock icon="🔍" title="Team Search"        desc="Find any professional basketball team by name, league, or flight callsign."          accent="#1D4ED8" />
+          <FeatureBlock icon="📍" title="Real-time Position" desc="Live map positions updated continuously — see exactly where they are."               accent="#C8102E" />
+          <FeatureBlock icon="✈️" title="Flight Status"      desc="Instantly know if a team is airborne, at the gate, or already landed."              accent="#FBBF24" />
+          <FeatureBlock icon="⭐" title="My Tracking List"   desc="Save your favorite teams and get a personalized view of their flight status."       accent="#22c55e" />
+        </div>
       </div>
 
     </div>

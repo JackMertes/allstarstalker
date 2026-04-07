@@ -1,9 +1,10 @@
 import React from 'react';
 import '../../styles/Common.css';
-import { STATUS_COLORS } from '../../utils/constants';
+import { STATUS_COLORS, STATUS_LABELS } from '../../utils/constants';
 
 function FlightStatus({ status }) {
-  const color = STATUS_COLORS[status] || '#95a5a6';
+  const color = STATUS_COLORS[status] || '#9ca3af';
+  const label = STATUS_LABELS[status] || status || 'Unknown';
 
   return (
     <span
@@ -18,7 +19,7 @@ function FlightStatus({ status }) {
         textTransform: 'uppercase'
       }}
     >
-      {status}
+      {label}
     </span>
   );
 }

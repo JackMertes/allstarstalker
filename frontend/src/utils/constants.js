@@ -13,7 +13,20 @@ export const STATUS_COLORS = {
   ACTIVE: '#2ecc71',
   LANDED: '#95a5a6',
   CANCELLED: '#e74c3c',
-  DELAYED: '#f39c12'
+  DELAYED: '#f39c12',
+  NOT_FLYING: '#6366f1',  // indigo — not flying but has last known position
+  UNKNOWN: '#9ca3af',     // gray — no data at all
+};
+
+// Human-readable labels for status badges
+export const STATUS_LABELS = {
+  SCHEDULED: 'Scheduled',
+  ACTIVE: 'Flying',
+  LANDED: 'Landed',
+  CANCELLED: 'Cancelled',
+  DELAYED: 'Delayed',
+  NOT_FLYING: 'Not Flying',
+  UNKNOWN: 'No Data',
 };
 
 // Entity types
