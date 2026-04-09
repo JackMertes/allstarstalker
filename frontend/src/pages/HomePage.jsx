@@ -5,6 +5,7 @@ import { TeamGridSkeleton } from '../components/common/TeamCardSkeleton';
 import { TeamCard } from '../components/flight';
 import { mockTeams } from '../utils/mockData';
 import { normalizeTeamsFromApi } from '../utils/teamApiMapper';
+import AllTeamsMap from '../components/flight/AllTeamsMap'; // all-28-teams map
 
 const USE_MOCK = false;
 const BASE     = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
@@ -170,6 +171,11 @@ function HomePage() {
             <span style={{ color: '#FBBF24', fontSize: 18, margin: '0 6px' }}>·</span>
           </React.Fragment>
         ))}
+      </div>
+
+      {/* ── ALL TEAMS MAP ────────────────────────────────────── */}
+      <div style={S.section}>
+        <AllTeamsMap />
       </div>
 
       {/* ── TEAMS IN THE AIR ─────────────────────────────────── */}
