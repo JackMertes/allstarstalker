@@ -90,26 +90,28 @@ build_frontend:
 # ------------------------------------------------------------
 # Deploy stage
 # - Runs only on main
-# - SSH into GCE VM and pull latest, then docker compose up
-# - Expects CI variables: VM_HOST, VM_USER, VM_SSH_KEY
+# - SSH into GCE VM, sync repo into shared app dir, then docker compose up
+# - Expects CI variables: VM_HOST, VM_USER, SSH_PRIVATE_KEY
+# - Optional CI variable: DEPLOY_PATH (defaults to /opt/star-stalker/app)
 # ------------------------------------------------------------
 
 deploy_to_vm:
   stage: deploy
   image: alpine:3.19
+  variables:
+    DEPLOY_PATH: /opt/star-stalker/app
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
   before_script:
-    - apk add --no-cache openssh-client git
-    # Write SSH key from CI variable VM_SSH_KEY (protected, masked) to file
+    - apk add --no-cache openssh-client rsync
     - mkdir -p ~/.ssh
-    - echo "$VM_SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - ssh-keyscan "$VM_HOST" >> ~/.ssh/known_hosts
+    - chmod 700 ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan -H "$VM_HOST" >> ~/.ssh/known_hosts
   script:
+    - rsync -az --delete --exclude '.git' ./ "$VM_USER@$VM_HOST:$DEPLOY_PATH/"
     - ssh "$VM_USER@$VM_HOST" "
-        cd Project_3b &&
-        git pull &&
-        docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.cloud.yml up -d --build
+        cd $DEPLOY_PATH &&
+        docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.cloud.yml up -d --build --remove-orphans
       "
-
