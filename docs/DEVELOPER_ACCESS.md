@@ -78,7 +78,7 @@ http://<VM_EXTERNAL_IP>:8080
 
 Example: `http://34.134.223.201:8080/api/teams` (replace with the current IP if it changes).
 
-The React app’s default base URL is `http://<VM_EXTERNAL_IP>:8080/api` (see `frontend/.env.example` and `DEFAULT_API_BASE_URL` in `frontend/src/utils/constants.js`). Override with `REACT_APP_API_BASE_URL` for a local Docker backend (`http://localhost:8080/api`).
+The React app’s default base URL is `http://<VM_EXTERNAL_IP>:8080/api` (see `DEFAULT_API_BASE_URL` in `frontend/src/utils/constants.js`). Override with `REACT_APP_API_BASE_URL` for a local Docker backend (`http://localhost:8080/api`).
 
 ---
 

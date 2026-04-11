@@ -9,9 +9,11 @@ Documentation for the flight data ingestion API: setup, endpoints, scheduling, a
 ### Prerequisites
 
 - Docker Compose
-- `.env` file at project root with DB credentials similar to `.env.example`:
+- `.env.local` file at project root (copy from `.env.local.example`):
 
 ```
+DB_HOST=mysql
+DB_PORT=3306
 DB_NAME=nba_flight_tracker
 DB_USER=your_user
 DB_PASSWORD=your_password
@@ -20,7 +22,7 @@ DB_PASSWORD=your_password
 ### Run with Docker
 
 ```bash
-docker compose up -d
+docker compose --env-file .env.local -f docker-compose.yml -f docker-compose.local.yml up -d
 ```
 
 Backend: http://localhost:8080  
