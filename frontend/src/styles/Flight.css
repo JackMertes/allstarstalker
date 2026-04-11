@@ -1,312 +1,332 @@
-/* ── Flight / Team Card ───────────────────────────────────────── */
-.flight-card {
-  background: var(--white);
+:root {
+  --jet-navy: #0f1b2d;
+  --cloud-gray: #e0e5ec;
+  --runway-gray: #6b7a8d;
+  --sky-blue: #2196f3;
+  --off-white: #f5f7fa;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 2px 8px
+    rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 16px
+    rgba(0,0,0,0.12);
+  --shadow-hover: 0 8px 28px
+    rgba(0,0,0,0.16);
+}
+
+/* — Team Card — */
+.team-card {
+  background: #fff;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--cloud-gray);
-  margin-bottom: 14px;
-  transition: box-shadow var(--transition), transform var(--transition);
   overflow: hidden;
+  transition: transform 0.2s ease,
+    box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
   position: relative;
+  border: 1px solid
+    rgba(0,0,0,0.06);
 }
 
-.flight-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+/* Hover lift effect */
+.team-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
 }
 
-/* ── Live status dot ──────────────────────────────────────────── */
-.live-dot {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  border: 2px solid var(--white);
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.12);
-}
-
-.live-dot.live {
-  background-color: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34,197,94,0.25);
-  animation: pulse-green 1.8s ease-in-out infinite;
-}
-
-.live-dot.offline { background-color: var(--runway-gray); }
-
-@keyframes pulse-green {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.25); }
-  50%       { box-shadow: 0 0 0 6px rgba(34,197,94,0.08); }
-}
-
-/* ── Card header bar ──────────────────────────────────────────── */
+/* — Card Header — */
 .card-header {
-  background: linear-gradient(90deg, var(--jet-navy) 0%, #1a3a6b 100%);
-  padding: 14px 44px 14px 18px; /* right pad for dot */
+  padding: 14px 18px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
 }
 
 .card-team-name {
-  color: var(--white);
+  margin: 0;
   font-size: 16px;
   font-weight: 700;
-  margin: 0;
-  flex: 1;
+  color: #ffffff;
+  letter-spacing: 0.3px;
 }
 
 .category-badge {
-  background-color: var(--nba-red);
-  color: var(--white);
-  padding: 3px 9px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  font-size: 10px;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
   white-space: nowrap;
 }
 
-/* ── Card body ────────────────────────────────────────────────── */
-.card-body {
-  padding: 16px 18px 0;
+/* — Status Dot — */
+.status-dot {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  z-index: 2;
+  border: 2px solid #fff;
 }
 
-/* Primary location info — shown at a glance */
+.status-dot.live {
+  background: #4caf50;
+  animation: pulse 1.5s infinite;
+}
+
+.status-dot.offline {
+  background: var(--runway-gray);
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0
+    rgba(76,175,80,0.5); }
+  70% { box-shadow: 0 0 0 8px
+    rgba(76,175,80,0); }
+  100% { box-shadow: 0 0 0 0
+    rgba(76,175,80,0); }
+}
+
+/* — Card Body — */
+.card-body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
 .card-location {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 14px;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .location-icon {
   font-size: 18px;
-  flex-shrink: 0;
-}
-
-.location-text {
-  flex: 1;
+  line-height: 1.4;
 }
 
 .location-label {
+  display: block;
   font-size: 11px;
-  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--runway-gray);
+  font-weight: 600;
   margin-bottom: 2px;
 }
 
 .location-value {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--jet-navy);
-}
-
-/* ── Show Details toggle ──────────────────────────────────────── */
-.details-toggle {
-  width: 100%;
-  background: none;
-  border: none;
-  border-top: 1px solid var(--cloud-gray);
-  padding: 10px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--royal-blue);
-  transition: background var(--transition);
-}
-
-.details-toggle:hover { background: var(--off-white); }
-
-.toggle-arrow {
-  transition: transform 0.2s ease;
-  font-size: 11px;
-  color: var(--runway-gray);
-}
-
-.toggle-arrow.open { transform: rotate(180deg); }
-
-/* ── Collapsible details panel ────────────────────────────────── */
-.card-details {
-  padding: 14px 18px 18px;
-  background: var(--off-white);
-  border-top: 1px solid var(--cloud-gray);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.detail-row {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.detail-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: var(--runway-gray);
-}
-
-.detail-value {
+  display: block;
   font-size: 14px;
+  color: var(--jet-navy);
   font-weight: 500;
-  color: var(--charcoal);
 }
 
-/* ── Card actions ─────────────────────────────────────────────── */
-.card-actions {
-  padding: 12px 18px 16px;
-  display: flex;
-  gap: 10px;
+/* — Flight Status Badge — */
+.flight-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  width: fit-content;
 }
 
-.card-actions .btn {
-  flex: 1;
-  text-align: center;
-  padding: 9px 12px;
-  font-size: 13px;
+.flight-status.active {
+  background: rgba(76,175,80,0.12);
+  color: #2e7d32;
 }
 
-/* ── Team list / search list spacing ─────────────────────────── */
-.flight-list { margin-top: 24px; }
-
-.search-results { margin-top: 8px; }
-
-.results-meta {
-  font-size: 13px;
+.flight-status.inactive {
+  background: rgba(107,122,141,0.12);
   color: var(--runway-gray);
-  margin-bottom: 14px;
 }
 
-/* ── Empty state ──────────────────────────────────────────────── */
-.empty-state {
+/* — Card Actions — */
+.card-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px 16px;
+  border-top: 1px solid
+    rgba(0,0,0,0.06);
+}
+
+.btn {
+  flex: 1;
+  padding: 8px 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
   text-align: center;
-  padding: 48px 24px;
-  background: var(--white);
-  border-radius: var(--radius-md);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: var(--sky-blue);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #1976d2;
+  box-shadow: 0 2px 8px
+    rgba(33,150,243,0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: var(--off-white);
+  color: var(--jet-navy);
   border: 1px solid var(--cloud-gray);
 }
 
-.empty-state-icon { font-size: 48px; margin-bottom: 14px; }
-.empty-state h3 { font-size: 18px; color: var(--jet-navy); margin-bottom: 8px; }
-.empty-state p  { color: var(--runway-gray); font-size: 14px; }
+.btn-secondary:hover {
+  background: #e8ecf0;
+}
 
-/* ── Search page ──────────────────────────────────────────────── */
+/* ============================
+   Search Page
+   ============================ */
 .search-page {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 32px 24px;
 }
 
-.search-page h1 {
-  text-align: center;
+.search-page h2 {
+  font-size: 26px;
+  font-weight: 700;
   color: var(--jet-navy);
-  font-size: 28px;
-  font-weight: 800;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
-/* ── Search bar ───────────────────────────────────────────────── */
-.flight-search { margin: 0 0 24px; }
-
+/* — Search Form — */
 .flight-search form {
   display: flex;
   gap: 10px;
-  max-width: 640px;
-  margin: 0 auto;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
 }
 
 .search-input {
   flex: 1;
-  padding: 11px 16px;
-  font-size: 15px;
-  border: 1.5px solid var(--cloud-gray);
+  min-width: 240px;
+  padding: 12px 18px;
+  border: 2px solid var(--cloud-gray);
   border-radius: var(--radius-sm);
-  outline: none;
-  background: var(--white);
-  transition: border-color var(--transition);
-  color: var(--charcoal);
-}
-
-.search-input:focus { border-color: var(--royal-blue); }
-
-/* ── Tracking page ────────────────────────────────────────────── */
-.tracking-page {
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.tracking-page h1 {
+  font-size: 15px;
   color: var(--jet-navy);
-  font-size: 28px;
-  font-weight: 800;
-  margin-bottom: 6px;
+  background: #fff;
+  transition: border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.tracking-list {
-  background: var(--white);
-  padding: 24px;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--cloud-gray);
+.search-input:focus {
+  outline: none;
+  border-color: var(--sky-blue);
+  box-shadow: 0 0 0 3px
+    rgba(33,150,243,0.15);
 }
 
-/* ── Flight details page ──────────────────────────────────────── */
-.flight-details-page { max-width: 1000px; margin: 0 auto; }
-
-.flight-details {
-  background: var(--white);
-  padding: 32px;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--cloud-gray);
+.search-input::placeholder {
+  color: #aab4c0;
 }
 
-.details-grid {
+/* — Team Grid — */
+.team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 16px;
-  margin-top: 20px;
+  grid-template-columns:
+    repeat(auto-fill,
+    minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* ============================
+   Tracking Page
+   ============================ */
+.tracking-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* ============================
+   Flight Details
+   ============================ */
+.card-details {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fill,
+    minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
 }
 
 .detail-item {
-  padding: 14px 16px;
   background: var(--off-white);
   border-radius: var(--radius-sm);
-  border: 1px solid var(--cloud-gray);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  padding: 12px 14px;
 }
 
-.detail-item strong {
-  color: var(--runway-gray);
+.detail-label {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-weight: 700;
+  color: var(--runway-gray);
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 
-.detail-item span {
+.detail-value {
+  font-size: 15px;
   color: var(--jet-navy);
-  font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-/* ── Responsive ───────────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .card-details       { grid-template-columns: 1fr; }
-  .card-actions       { flex-direction: column; }
-  .flight-search form { flex-direction: column; }
-  .search-input       { width: 100%; }
-  .details-grid       { grid-template-columns: 1fr; }
+/* ============================
+   Responsive
+   ============================ */
+@media (max-width: 768px) {
+  .team-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .search-page {
+    padding: 20px 16px;
+  }
+
+  .flight-search form {
+    flex-direction: column;
+  }
+
+  .search-input {
+    min-width: unset;
+  }
 }

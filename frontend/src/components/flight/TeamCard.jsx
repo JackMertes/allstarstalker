@@ -1,56 +1,139 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate }
+  from 'react-router-dom';
 import FlightStatus from './FlightStatus';
-import teamService from '../../services/teamService';
-import { useFavorites } from '../../hooks/useFavorites';
+import teamService
+  from '../../services/teamService';
+import { useFavorites }
+  from '../../hooks/useFavorites';
 
+// NBA team primary colors map
+const TEAM_COLORS = {
+  "Atlanta Hawks": "#E03A3E",
+  "Boston Celtics": "#007A33",
+  "Brooklyn Nets": "#000000",
+  "Charlotte Hornets": "#1D1160",
+  "Chicago Bulls": "#CE1141",
+  "Cleveland Cavaliers": "#860038",
+  "Dallas Mavericks": "#00538C",
+  "Denver Nuggets": "#0E2240",
+  "Detroit Pistons": "#C8102E",
+  "Golden State Warriors": "#1D428A",
+  "Houston Rockets": "#CE1141",
+  "Indiana Pacers": "#002D62",
+  "LA Clippers": "#C8102E",
+  "Los Angeles Lakers": "#552583",
+  "Memphis Grizzlies": "#5D76A9",
+  "Miami Heat": "#98002E",
+  "Milwaukee Bucks": "#00471B",
+  "Minnesota Timberwolves": "#0C2340",
+  "New Orleans Pelicans": "#0C2340",
+  "New York Knicks": "#006BB6",
+  "Oklahoma City Thunder": "#007AC1",
+  "Orlando Magic": "#0077C0",
+  "Philadelphia 76ers": "#006BB6",
+  "Phoenix Suns": "#1D1160",
+  "Portland Trail Blazers": "#E03A3E",
+  "Sacramento Kings": "#5A2D81",
+  "San Antonio Spurs": "#C4CED4",
+  "Toronto Raptors": "#CE1141",
+  "Utah Jazz": "#002B5C",
+  "Washington Wizards": "#002B5C",
+};
+
+// Returns team color, fallback navy
+function getTeamColor(teamName) {
+  return TEAM_COLORS[teamName]
+    || "#1a2233";
+}
+
+// Builds location display string
 function getLocationDisplay(team) {
-  if (team.origin && team.destination) return `${team.origin} → ${team.destination}`;
-  if (team.origin)                     return team.origin;
-  if (team.destination)                return team.destination;
+  if (team.origin && team.destination)
+    return `${team.origin} → ${team.destination}`;
+  if (team.origin) return team.origin;
+  if (team.destination)
+    return team.destination;
   return 'Location unknown';
 }
 
 function TeamCard({ team }) {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const { isFavorite, toggle }        = useFavorites();
+  const [loading, setLoading] =
+    useState(false);
+  const { isFavorite, toggle } =
+    useFavorites();
 
-  const isLive    = team.status === 'ACTIVE';
-  const isFav     = isFavorite(team.callsign);
+  const isLive =
+    team.status === 'ACTIVE';
+  const isFav =
+    isFavorite(team.callsign);
+  // Get team's primary color
+  const headerColor =
+    getTeamColor(team.team);
 
   const handleCheckStatus = async () => {
     setLoading(true);
     try {
-      const response = await teamService.checkStatus(team.callsign);
-      const statusData = response[team.callsign];
-      // Pass data in navigation state whenever we have any position data (flying or last known)
+      const response =
+        await teamService.checkStatus(
+          team.callsign
+        );
+      const statusData =
+        response[team.callsign];
       if (statusData?.raw) {
-        navigate(`/flight/${team.callsign}`, { state: { flightData: statusData } });
+        navigate(
+          `/flight/${team.callsign}`,
+          {
+            state: {
+              flightData: statusData
+            }
+          }
+        );
       } else {
-        navigate(`/flight/${team.callsign}`);
+        navigate(
+          `/flight/${team.callsign}`
+        );
       }
     } catch {
-      navigate(`/flight/${team.callsign}`);
+      navigate(
+        `/flight/${team.callsign}`
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const handleAddToTracking = () => {
-    console.log('Add to tracking:', team.callsign);
+    console.log(
+      'Add to tracking:',
+      team.callsign
+    );
   };
 
   return (
-    <div className="team-card" style={{ position: 'relative' }}>
-      {/* Live indicator dot */}
-      <div className={`status-dot ${isLive ? 'live' : 'offline'}`} title={isLive ? 'Live' : 'Not flying'} />
+    <div
+      className="team-card"
+      style={{ position: 'relative' }}
+    >
+      <div
+        className={`status-dot ${
+          isLive ? 'live' : 'offline'
+        }`}
+        title={
+          isLive ? 'Live' : 'Not flying'
+        }
+      />
 
-      {/* ── Star / favorite button ── */}
       <button
-        onClick={() => toggle(team.callsign)}
-        aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
-        title={isFav ? 'Remove from favorites' : 'Add to favorites'}
+        onClick={() =>
+          toggle(team.callsign)
+        }
+        aria-label={
+          isFav
+            ? 'Remove from favorites'
+            : 'Add to favorites'
+        }
         style={{
           position: 'absolute',
           top: 10,
@@ -64,50 +147,84 @@ function TeamCard({ team }) {
           borderRadius: 6,
           transition: 'transform 0.15s',
           zIndex: 2,
-          filter: isFav ? 'none' : 'grayscale(1) opacity(0.45)',
+          filter: isFav
+            ? 'none'
+            : 'grayscale(1) opacity(0.45)',
         }}
-        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.25)'}
-        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+        onMouseEnter={e =>
+          e.currentTarget.style.transform
+            = 'scale(1.25)'
+        }
+        onMouseLeave={e =>
+          e.currentTarget.style.transform
+            = 'scale(1)'
+        }
       >
         ⭐
       </button>
 
-      {/* Navy header bar */}
-      <div className="card-header" style={{ paddingRight: 36 }}>
-        <h3 className="card-team-name">{team.team}</h3>
-        <span className="category-badge">{team.category}</span>
+      {/* TEAM-COLORED HEADER BAR */}
+      <div
+        className="card-header"
+        style={{
+          paddingRight: 36,
+          backgroundColor: headerColor,
+        }}
+      >
+        <h3 className="card-team-name">
+          {team.team}
+        </h3>
+        <span className="category-badge">
+          {team.category}
+        </span>
       </div>
 
-      {/* Callsign */}
       {team.callsign && (
-        <div style={{ padding: '6px 16px 0', fontSize: 12, color: '#8a98a8', fontFamily: 'monospace', letterSpacing: '0.5px' }}>
+        <div style={{
+          padding: '6px 16px 0',
+          fontSize: 12,
+          color: '#8a98a8',
+          fontFamily: 'monospace',
+        }}>
           {team.callsign}
         </div>
       )}
 
-      {/* Main info */}
       <div className="card-body">
         <div className="card-location">
-          <span className="location-icon">{isLive ? '✈️' : '📍'}</span>
+          <span className="location-icon">
+            {isLive ? '✈️' : '📍'}
+          </span>
           <div>
-            <span className="location-label">{isLive ? 'In Flight' : 'Location'}</span>
-            <span className="location-value">{getLocationDisplay(team)}</span>
+            <span className="location-label">
+              {isLive
+                ? 'In Flight'
+                : 'Location'}
+            </span>
+            <span className="location-value">
+              {getLocationDisplay(team)}
+            </span>
           </div>
         </div>
-
-        <FlightStatus status={team.status} />
+        <FlightStatus
+          status={team.status}
+        />
       </div>
 
-      {/* Actions */}
       <div className="card-actions">
         <button
           className="btn btn-primary"
           onClick={handleCheckStatus}
           disabled={loading}
         >
-          {loading ? 'Loading…' : 'Show Details'}
+          {loading
+            ? 'Loading…'
+            : 'Show Details'}
         </button>
-        <button className="btn btn-secondary" onClick={handleAddToTracking}>
+        <button
+          className="btn btn-secondary"
+          onClick={handleAddToTracking}
+        >
           + Track
         </button>
       </div>
