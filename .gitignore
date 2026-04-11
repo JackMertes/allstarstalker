@@ -66,5 +66,7 @@ yarn-error.log*
 *.pem
 *.key
 *.p12
+github-actions-deploy-key
+github-actions-deploy-key.pub
 application-local.properties
 application-dev.properties
