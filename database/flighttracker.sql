@@ -26,7 +26,22 @@ DROP TABLE IF EXISTS data_sources;
 DROP TABLE IF EXISTS team_flights;
 DROP TABLE IF EXISTS flights;
 DROP TABLE IF EXISTS airports;
+DROP TABLE IF EXISTS tracked_items; -- tracked_items can be dropped before teams since it has no FK to teams
 DROP TABLE IF EXISTS teams; -- parent tables dropped last
+
+-- ============================================================
+-- TRACKED ITEMS (user tracking list)
+-- ============================================================
+
+CREATE TABLE tracked_items (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, -- unique tracked item ID
+  user_id BIGINT UNSIGNED, -- dummy column for future user support
+  team VARCHAR(80),
+  callsign VARCHAR(16),
+  notification_enabled BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
 
 -- ============================================================
 -- TEAMS
@@ -291,6 +306,12 @@ SELECT t.id, f.id, 'TEAM_CHARTER', 95
 FROM teams t JOIN flights f
 WHERE t.abbreviation='MIL' AND f.external_flight_id='demo1'; -- link demo flight to Milwaukee Bucks
 
+INSERT INTO tracked_items (user_id, team, callsign, notification_enabled)
+VALUES
+  (1, 'Milwaukee Bucks', 'DAL8932', TRUE),
+  (1, 'Boston Celtics', 'DAL8919', TRUE),
+  (2, 'Los Angeles Lakers', 'DAL8929', FALSE),
+  (2, 'Golden State Warriors', 'DAL8926', TRUE);
 -- ============================================================
 -- DONE
 -- ============================================================

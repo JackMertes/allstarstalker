@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import teamService from '../services/teamService';
+import trackingService from '../services/trackingService';
 import { mockUserTrackings } from '../utils/mockData';
 import { DEFAULT_API_BASE_URL } from '../utils/constants';
 
@@ -183,14 +185,53 @@ function TrackingPage() {
     load();
   }, []);
 
-  const handleAdd = (value) => {
-    setTrackings(prev => [...prev, {
-      trackingId: Date.now(),
-      type: 'flight',
-      flightNumber: value.toUpperCase(),
-      notificationEnabled: true,
-      createdAt: new Date().toISOString(),
-    }]);
+  const handleAdd = async (value) => {
+    try {
+      const teams = await teamService.getAllTeams();
+      const input = value.toLowerCase();
+      const match = teams.find(
+        t => (t.team && t.team.toLowerCase() === input) ||
+             (t.callsign && t.callsign.toLowerCase() === input)
+      );
+      if (match) {
+        // Prevent duplicate team tracking
+        const alreadyTracked = trackings.some(
+          t => t.type === 'team' && (
+            (t.team && t.team.toLowerCase() === match.team.toLowerCase()) ||
+            (t.callsign && t.callsign.toLowerCase() === match.callsign.toLowerCase())
+          )
+        );
+        if (alreadyTracked) {
+          alert(`Team: ${match.team} (${match.callsign}) is already being tracked.`);
+          return;
+        }
+        // Actually add tracking via API
+        try {
+          const trackingData = {
+            type: 'team',
+            team: match.team,
+            callsign: match.callsign,
+            category: match.category,
+            notificationEnabled: true,
+            createdAt: new Date().toISOString(),
+          };
+          const apiResult = await trackingService.addTracking(trackingData);
+          setTrackings(prev => [
+            ...prev,
+            {
+              ...trackingData,
+              trackingId: apiResult.trackingId || Date.now(),
+            },
+          ]);
+        } catch (err) {
+          alert('Failed to add tracking to server.');
+        }
+      } else {
+        alert(`Team or callsign: ${value} does not exist.`);
+      }
+    } catch (err) {
+      alert('Failed to validate team. Please try again.');
+    }
   };
 
   const handleRemove = (id) =>
