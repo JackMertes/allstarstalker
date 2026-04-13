@@ -189,7 +189,8 @@ function FlightDetails({ flightData }) {
   if (!hasData) {
     return (
       <div className="flight-empty-state">
-        <h3>No flight data available</h3>
+        <h3>No flight information available yet</h3>
+        <p>This team page is working. We just do not have trackable flight data yet.</p>
       </div>
     );
   }
