@@ -182,7 +182,7 @@ function FlightDetails({ flightData }) {
     },
     {
       label: 'Flight Number',
-      value: getValue(ac.flight?.trim() || flightData.callsign)
+      value: getValue(ac.flight?.trim() || flightData?.callsign)
     }
   ];
 
@@ -266,7 +266,7 @@ function FlightDetails({ flightData }) {
             >
               <Popup>
                 <strong>
-                  {flightData.callsign}
+                  {flightData?.callsign || 'Unknown'}
                 </strong>
                 <br />
                 {ac.desc || 'Unavailable'}
