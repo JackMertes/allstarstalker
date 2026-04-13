@@ -29,7 +29,7 @@ function Header() {
           <nav className="nav">
             <Link to="/"         className={`nav-link ${isActive('/')        ? 'active' : ''}`}>Home</Link>
             <Link to="/search"   className={`nav-link ${isActive('/search')  ? 'active' : ''}`}>
-              Search
+              Teams
               {favCount > 0 && (
                 <span style={{
                   marginLeft: 5,

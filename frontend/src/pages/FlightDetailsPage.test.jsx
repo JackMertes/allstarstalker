@@ -39,14 +39,14 @@ const flyingData = {
   },
 };
 
-/** Renders FlightDetailsPage inside a router with the /flight/:callsign route */
+/** Renders FlightDetailsPage inside a router with the /flight/:flightId route */
 function renderPage(callsign = 'DAL8924', locationState = undefined) {
   return render(
     <MemoryRouter
       initialEntries={[{ pathname: `/flight/${callsign}`, state: locationState }]}
     >
       <Routes>
-        <Route path="/flight/:callsign" element={<FlightDetailsPage />} />
+        <Route path="/flight/:flightId" element={<FlightDetailsPage />} />
         {/* Stub for /search so back-navigation tests don't 404 */}
         <Route path="/search" element={<div>Search Page</div>} />
       </Routes>
@@ -89,7 +89,7 @@ describe('FlightDetailsPage', () => {
     expect(screen.getByText('FLYING')).toBeInTheDocument();
   });
 
-  it('shows an error when the fetched team is not currently flying', async () => {
+  it('shows a friendly no-data message when the fetched team is not currently flying', async () => {
     teamService.checkStatus.mockResolvedValue({
       DAL8924: { is_flying: false, callsign: 'DAL8924' },
     });
@@ -97,11 +97,11 @@ describe('FlightDetailsPage', () => {
     renderPage('DAL8924');
 
     expect(
-      await screen.findByText(/no flight data available for this team yet/i)
+      await screen.findByText(/no flight information available yet/i)
     ).toBeInTheDocument();
   });
 
-  it('shows "Back to Search" button after a not-flying error', async () => {
+  it('shows "Back to Search" button after a no-data response', async () => {
     teamService.checkStatus.mockResolvedValue({
       DAL8924: { is_flying: false, callsign: 'DAL8924' },
     });
