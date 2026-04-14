@@ -28,9 +28,8 @@ lint_frontend:
   script:
     - cd frontend
     - npm ci
-    # react-scripts' eslint is wired via eslintConfig in package.json
-    - npx eslint src || echo "Frontend lint errors will be treated as failures once rules are finalized."
-  allow_failure: true
+    # Fail the pipeline on frontend lint errors.
+    - npx eslint src
 
 # ------------------------------------------------------------
 # Test stage
@@ -51,8 +50,7 @@ test_frontend:
   script:
     - cd frontend
     - npm ci
-    - npm test -- --ci --watch=false
-  allow_failure: true
+    - CI=true npm test -- --watchAll=false
 
 # ------------------------------------------------------------
 # Build stage
