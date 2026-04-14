@@ -48,10 +48,9 @@ export const POLLING_INTERVALS = {
 
 /**
  * Default API base when REACT_APP_API_BASE_URL is unset.
- * Matches docs/DEVELOPER_ACCESS.md (VM external IP :8080 + /api prefix for axios paths).
- * Override in .env for local Docker: http://localhost:8080/api
+ * Local development should talk to the local backend by default.
  */
-export const DEFAULT_API_BASE_URL = 'http://34.134.223.201:8080/api';
+export const DEFAULT_API_BASE_URL = 'http://localhost:8080/api';
 
 // API endpoints
 export const API_ENDPOINTS = {
