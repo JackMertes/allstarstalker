@@ -5,26 +5,29 @@ import {
 } from '../../utils/constants';
 
 function FlightStatus({ status }) {
+  const normalizedStatus = String(status || 'UNKNOWN').trim().toUpperCase();
+
   /* Get color or default gray */
   const color =
-    STATUS_COLORS[status]
+    STATUS_COLORS[normalizedStatus]
     || '#9ca3af';
 
   /* Get label or fallback */
   const label =
-    STATUS_LABELS[status]
-    || status
+    STATUS_LABELS[normalizedStatus]
+    || normalizedStatus
     || 'Unknown';
 
   /* Pick icon based on status */
   const icon = {
-    flying: '🟢',
-    landed: '🛬',
-    scheduled: '📅',
-    delayed: '⚠️',
-    cancelled: '❌',
-    unknown: '❓',
-  }[status] || '❓';
+    ACTIVE: '🟢',
+    LANDED: '🛬',
+    SCHEDULED: '📅',
+    DELAYED: '⚠️',
+    CANCELLED: '❌',
+    NOT_FLYING: '📍',
+    UNKNOWN: '❓',
+  }[normalizedStatus] || '❓';
 
   return (
     <span

@@ -4,7 +4,9 @@ export const FLIGHT_STATUS = {
   ACTIVE: 'ACTIVE',
   LANDED: 'LANDED',
   CANCELLED: 'CANCELLED',
-  DELAYED: 'DELAYED'
+  DELAYED: 'DELAYED',
+  NOT_FLYING: 'NOT_FLYING',
+  UNKNOWN: 'UNKNOWN'
 };
 
 // Flight status colors
