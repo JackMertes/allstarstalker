@@ -12,6 +12,7 @@ package com.university.backend;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +23,7 @@ public class MockDataService {
     private final List<Map<String, Object>> userTrackings = new ArrayList<>();
     private final List<Map<String, Object>> teams = new ArrayList<>();
     private final Map<String, Map<String, Object>> statusData = new HashMap<>();
+    private final AtomicLong nextTrackingId = new AtomicLong(4);
 
     public MockDataService() {
     System.out.println("MockDataService constructor started");
@@ -171,7 +173,33 @@ public class MockDataService {
     }
 
     public List<Map<String, Object>> getUserTrackings() {
-        return userTrackings;
+        return userTrackings.stream()
+                .map(HashMap::new)
+                .collect(Collectors.toList());
+    }
+
+    public Map<String, Object> addUserTracking(Map<String, Object> trackingData) {
+        Map<String, Object> tracking = new HashMap<>(trackingData);
+        tracking.put("trackingId", String.valueOf(nextTrackingId.getAndIncrement()));
+        tracking.putIfAbsent("notificationEnabled", true);
+        tracking.putIfAbsent("createdAt", java.time.Instant.now().toString());
+        userTrackings.add(tracking);
+        return new HashMap<>(tracking);
+    }
+
+    public boolean removeUserTracking(String trackingId) {
+        return userTrackings.removeIf(tracking ->
+                Objects.equals(String.valueOf(tracking.get("trackingId")), trackingId));
+    }
+
+    public Optional<Map<String, Object>> updateTrackingNotification(String trackingId, boolean enabled) {
+        return userTrackings.stream()
+                .filter(tracking -> Objects.equals(String.valueOf(tracking.get("trackingId")), trackingId))
+                .findFirst()
+                .map(tracking -> {
+                    tracking.put("notificationEnabled", enabled);
+                    return new HashMap<>(tracking);
+                });
     }
 
     public Map<String, Object> getStatusByCallsign(String callsign) {

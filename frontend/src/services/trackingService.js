@@ -1,6 +1,15 @@
 import apiClient from './api';
 
 const trackingService = {
+  getTrackings: async () => {
+    try {
+      const response = await apiClient.get('/tracking');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   // Get user trackings
   getUserTrackings: async (userId) => {
     try {
@@ -25,6 +34,15 @@ const trackingService = {
   removeTracking: async (trackingId) => {
     try {
       const response = await apiClient.delete(`/tracking/${trackingId}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  updateTracking: async (trackingId, updates) => {
+    try {
+      const response = await apiClient.patch(`/tracking/${trackingId}`, updates);
       return response.data;
     } catch (error) {
       throw error;
