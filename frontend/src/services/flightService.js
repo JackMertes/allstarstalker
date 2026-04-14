@@ -5,7 +5,7 @@ const flightService = {
   searchByFlightNumber: async (flightNumber) => {
     try {
       const response = await apiClient.get(`/flights/search`, {
-        params: { flightNumber }
+        params: { searchTerm: flightNumber }
       });
       return response.data;
     } catch (error) {

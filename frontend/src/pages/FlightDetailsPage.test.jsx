@@ -39,14 +39,14 @@ const flyingData = {
   },
 };
 
-/** Renders FlightDetailsPage inside a router with the /flight/:flightId route */
+/** Renders FlightDetailsPage inside a router with the /flight/:callsign route */
 function renderPage(callsign = 'DAL8924', locationState = undefined) {
   return render(
     <MemoryRouter
       initialEntries={[{ pathname: `/flight/${callsign}`, state: locationState }]}
     >
       <Routes>
-        <Route path="/flight/:flightId" element={<FlightDetailsPage />} />
+        <Route path="/flight/:callsign" element={<FlightDetailsPage />} />
         {/* Stub for /search so back-navigation tests don't 404 */}
         <Route path="/search" element={<div>Search Page</div>} />
       </Routes>

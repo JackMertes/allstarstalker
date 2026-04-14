@@ -17,8 +17,8 @@ const isNoDataYetState = (statusData) => {
 };
 
 function FlightDetailsPage() {
-  const { flightId } = useParams();
-  const callsign = String(flightId || '').trim().toUpperCase();
+  const { callsign: callsignParam } = useParams();
+  const callsign = String(callsignParam || '').trim().toUpperCase();
   const navigate = useNavigate();
   const location = useLocation();
 
