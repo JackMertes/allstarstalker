@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // for navigating to flight details page
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import teamService from '../../services/teamService';
+import { getTeamColor } from '../../constants/teamColors'; // reuse Akhil's team color lookup
 
 // All 28 NBA teams with their callsigns (matches database/teams.json)
 const ALL_TEAMS = [
@@ -36,19 +38,28 @@ const ALL_TEAMS = [
   { team: 'Washington Wizards',      callsign: 'DAL8945' },
 ];
 
-// Blue plane for live flights, orange for last known position
-const planeIcon = (isLive, track) => new L.DivIcon({
+// Plane colored by team primary color, with a green dot (live) or red dot (last known) overlaid
+const planeIcon = (color, isLive, track) => new L.DivIcon({
   html: `
-    <div style="transform: rotate(${track || 0}deg); display: flex; justify-content: center; align-items: center;">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="${isLive ? '#1a73e8' : '#e67e22'}"
-        xmlns="http://www.w3.org/2000/svg"
-        style="filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.4));">
-        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
-      </svg>
+    <div style="position: relative; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center;">
+      <div style="transform: rotate(${track || 0}deg); display: flex; justify-content: center; align-items: center;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="${color}"
+          xmlns="http://www.w3.org/2000/svg"
+          style="filter: drop-shadow(0px 2px 3px rgba(0,0,0,0.4));">
+          <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+        </svg>
+      </div>
+      <div style="
+        position: absolute; top: 2px; right: 2px;
+        width: 9px; height: 9px; border-radius: 50%;
+        background: ${isLive ? '#22c55e' : '#94a3b8'};
+        border: 1.5px solid white;
+        box-shadow: ${isLive ? '0 0 6px 2px #22c55e' : 'none'};">
+      </div>
     </div>`,
   className: 'custom-airplane-icon',
-  iconSize: [28, 28],
-  iconAnchor: [14, 14],
+  iconSize: [36, 36],
+  iconAnchor: [18, 18],
 });
 
 function AllTeamsMap() {
@@ -117,8 +128,9 @@ function AllTeamsMap() {
         <h2 style={S.title}>League Flight Map</h2>
         <p style={S.subtitle}>
           All 28 NBA teams • {liveCount > 0 ? `${liveCount} currently airborne` : 'No teams airborne right now'} •{' '}
-          <span style={{ color: '#1a73e8', fontWeight: 600 }}>● Live</span>{' '}
-          <span style={{ color: '#e67e22', fontWeight: 600, marginLeft: 8 }}>● Last Known</span>
+          Planes are team colors •{' '}
+          <span style={{ color: '#22c55e', fontWeight: 600 }}>● Airborne</span>{' '}
+          <span style={{ color: '#94a3b8', fontWeight: 600, marginLeft: 8 }}>● Last Known</span>
         </p>
       </div>
 
@@ -147,11 +159,17 @@ function AllTeamsMap() {
               <Marker
                 key={tp.callsign}
                 position={[tp.lat, tp.lon]}
-                icon={planeIcon(tp.isLive, tp.track)}
+                icon={planeIcon(getTeamColor(tp.team), tp.isLive, tp.track)}
               >
                 <Popup>
                   <div style={{ minWidth: 160 }}>
-                    <strong style={{ fontSize: 14 }}>{tp.team}</strong>
+                    {/* Clicking the team name goes to the full flight details page */}
+                    <Link
+                      to={`/flight/${tp.callsign}`}
+                      style={{ fontSize: 14, fontWeight: 700, color: '#1a73e8', textDecoration: 'none' }}
+                    >
+                      {tp.team} →
+                    </Link>
                     <br />
                     <span style={{
                       display: 'inline-block', marginTop: 4,

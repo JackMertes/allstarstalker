@@ -38,7 +38,7 @@
 
 /* — Card Header — */
 .card-header {
-  padding: 14px 18px;
+  padding: 14px 18px 14px 30px; /* extra left padding so the status dot doesn't overlap the team name */
   display: flex;
   align-items: center;
   justify-content: space-between;
