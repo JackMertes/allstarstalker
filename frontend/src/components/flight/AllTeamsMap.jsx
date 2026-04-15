@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom'; // for navigating to flight details page
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import teamService from '../../services/teamService';
@@ -62,10 +62,29 @@ const planeIcon = (color, isLive, track) => new L.DivIcon({
   iconAnchor: [18, 18],
 });
 
+function MapBehavior({ interactive, onMapClick }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (interactive) {
+      map.scrollWheelZoom.enable();
+    } else {
+      map.scrollWheelZoom.disable();
+    }
+  }, [interactive, map]);
+
+  useMapEvents({
+    click: () => onMapClick(),
+  });
+
+  return null;
+}
+
 function AllTeamsMap() {
   const [teamPositions, setTeamPositions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [liveCount, setLiveCount] = useState(0);
+  const [mapInteractive, setMapInteractive] = useState(false);
 
   useEffect(() => {
     fetchAllPositions();
@@ -143,56 +162,71 @@ function AllTeamsMap() {
             <p style={{ color: '#5a6a7e', margin: 0 }}>Loading all team positions…</p>
           </div>
         ) : (
-          <MapContainer
-            center={[38, -96]}
-            zoom={4}
-            scrollWheelZoom={false}
-            style={{ height: '100%', width: '100%', zIndex: 1 }}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-
-            {/* One marker per team that has position data */}
-            {teamPositions.map((tp) => (
-              <Marker
-                key={tp.callsign}
-                position={[tp.lat, tp.lon]}
-                icon={planeIcon(getTeamColor(tp.team), tp.isLive, tp.track)}
+          <>
+            {!mapInteractive && (
+              <button
+                type="button"
+                style={S.mapInteractionHint}
+                onClick={() => setMapInteractive(true)}
               >
-                <Popup>
-                  <div style={{ minWidth: 160 }}>
-                    {/* Clicking the team name goes to the full flight details page */}
-                    <Link
-                      to={`/flight/${tp.callsign}`}
-                      style={{ fontSize: 14, fontWeight: 700, color: '#1a73e8', textDecoration: 'none' }}
-                    >
-                      {tp.team} →
-                    </Link>
-                    <br />
-                    <span style={{
-                      display: 'inline-block', marginTop: 4,
-                      background: tp.isLive ? '#2ecc71' : '#e67e22',
-                      color: 'white', padding: '2px 8px', borderRadius: 4,
-                      fontSize: 11, fontWeight: 700,
-                    }}>
-                      {tp.isLive ? 'LIVE' : 'LAST KNOWN'}
-                    </span>
-                    <br />
-                    <span style={{ fontSize: 12, color: '#555', marginTop: 4, display: 'block' }}>
-                      {tp.flight}
-                    </span>
-                    {tp.lastSeen && (
-                      <span style={{ fontSize: 11, color: '#888' }}>
-                        {new Date(tp.lastSeen).toLocaleString()}
+                Click map to enable zoom
+              </button>
+            )}
+            <MapContainer
+              center={[38, -96]}
+              zoom={4}
+              scrollWheelZoom={false}
+              style={{ height: '100%', width: '100%', zIndex: 1 }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <MapBehavior
+                interactive={mapInteractive}
+                onMapClick={() => setMapInteractive(true)}
+              />
+
+              {/* One marker per team that has position data */}
+              {teamPositions.map((tp) => (
+                <Marker
+                  key={tp.callsign}
+                  position={[tp.lat, tp.lon]}
+                  icon={planeIcon(getTeamColor(tp.team), tp.isLive, tp.track)}
+                >
+                  <Popup>
+                    <div style={{ minWidth: 160 }}>
+                      {/* Clicking the team name goes to the full flight details page */}
+                      <Link
+                        to={`/flight/${tp.callsign}`}
+                        style={{ fontSize: 14, fontWeight: 700, color: '#1a73e8', textDecoration: 'none' }}
+                      >
+                        {tp.team} →
+                      </Link>
+                      <br />
+                      <span style={{
+                        display: 'inline-block', marginTop: 4,
+                        background: tp.isLive ? '#2ecc71' : '#e67e22',
+                        color: 'white', padding: '2px 8px', borderRadius: 4,
+                        fontSize: 11, fontWeight: 700,
+                      }}>
+                        {tp.isLive ? 'LIVE' : 'LAST KNOWN'}
                       </span>
-                    )}
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
+                      <br />
+                      <span style={{ fontSize: 12, color: '#555', marginTop: 4, display: 'block' }}>
+                        {tp.flight}
+                      </span>
+                      {tp.lastSeen && (
+                        <span style={{ fontSize: 11, color: '#888' }}>
+                          {new Date(tp.lastSeen).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          </>
         )}
       </div>
 
@@ -232,6 +266,22 @@ const S = {
     overflow: 'hidden',
     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
     border: '1px solid #e2e8f0',
+    position: 'relative',
+  },
+  mapInteractionHint: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    zIndex: 1000,
+    border: 'none',
+    borderRadius: 999,
+    padding: '8px 12px',
+    fontSize: 12,
+    fontWeight: 700,
+    color: '#0f172a',
+    background: 'rgba(255,255,255,0.92)',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+    cursor: 'pointer',
   },
   loadingBox: {
     height: '100%', display: 'flex', flexDirection: 'column',
