@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import FlightSearch from '../components/flight/FlightSearch';
 import TeamList from '../components/flight/TeamList';
 import { TeamGridSkeleton } from '../components/common/TeamCardSkeleton';
@@ -55,6 +55,7 @@ function SearchPage() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   /** Full list from API (or mock); search filters this without re-fetching */
   const [allTeamsCache, setAllTeamsCache] = useState(null);
+  const latestSearchTermRef = useRef(searchTerm);
 
   useEffect(() => {
     if (searchResults === null) {
@@ -73,18 +74,29 @@ function SearchPage() {
     clearError();
     try {
       const teams = await teamService.getAllTeams();
+      const latestSearchTerm = latestSearchTermRef.current.trim();
       setAllTeamsCache(teams);
-      setSearchResults(teams);
+      setSearchResults(
+        latestSearchTerm
+          ? filterTeamsBySearchTerm(teams, latestSearchTerm)
+          : teams
+      );
     } catch {
+      const latestSearchTerm = latestSearchTermRef.current.trim();
       setError('Could not load teams. Showing local data.');
       setAllTeamsCache(mockTeams);
-      setSearchResults(mockTeams);
+      setSearchResults(
+        latestSearchTerm
+          ? filterTeamsBySearchTerm(mockTeams, latestSearchTerm)
+          : mockTeams
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const handleSearch = (term) => {
+    latestSearchTermRef.current = term;
     setSearchTerm(term);
     if (!term.trim()) {
       if (USE_MOCK) {
@@ -96,7 +108,11 @@ function SearchPage() {
       }
       return;
     }
-    const source = USE_MOCK ? mockTeams : (allTeamsCache ?? []);
+    if (!USE_MOCK && allTeamsCache == null) {
+      if (!loading) loadTeams();
+      return;
+    }
+    const source = USE_MOCK ? mockTeams : allTeamsCache;
     const filtered = USE_MOCK
       ? searchTeams(term)
       : filterTeamsBySearchTerm(source, term);
