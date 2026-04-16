@@ -30,7 +30,7 @@ public class TeamController {
         this.airportRepo = airportRepo;
     }
 
-    private static String formatAirport(Airport a) {
+    protected static String formatAirport(Airport a) {
         if (a == null) {
             return null;
         }
@@ -45,7 +45,7 @@ public class TeamController {
         return a.getName() != null ? a.getName() : "";
     }
 
-    private String airportLabel(Long airportId) {
+    protected String airportLabel(Long airportId) {
         if (airportId == null) {
             return null;
         }
@@ -54,14 +54,14 @@ public class TeamController {
     }
 
     /** Ingestion does not populate airport IDs; use live position from Airplanes.live when present. */
-    private static String formatLivePosition(BigDecimal lat, BigDecimal lon) {
+    protected static String formatLivePosition(BigDecimal lat, BigDecimal lon) {
         if (lat == null || lon == null) {
             return null;
         }
         return String.format("%.4f°, %.4f°", lat.doubleValue(), lon.doubleValue());
     }
 
-    private static boolean hasLocationLine(Map<String, String> row) {
+    protected static boolean hasLocationLine(Map<String, String> row) {
         String o = row.get("origin");
         String d = row.get("destination");
         return (o != null && !o.isBlank()) || (d != null && !d.isBlank());

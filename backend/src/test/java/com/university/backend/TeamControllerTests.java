@@ -1,5 +1,7 @@
 package com.university.backend;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
@@ -26,6 +28,10 @@ public class TeamControllerTests {
     @Autowired
     private MockDataService mds;
 
+    /**
+     * Test that all autowired-annotated fields are correctly initialized
+     * by Spring's dependency injection facilities.
+    */
     @Test
     void contextLoads() {
         assertThat(controller).isNotNull();
@@ -34,6 +40,38 @@ public class TeamControllerTests {
     }
 
 
-    public void testTeamControllerCalls() {assert(false);}
+    /**
+     * Tests TeamController.formatAirport
+    */
+    @Test
+    void testFormatAirport() {
+
+        Airport airport = new Airport();
+        airport.setIataCode(null);
+        airport.setCity(null);
+        airport.setName("Dane County Regional Airport");
+
+        String result = TeamController.formatAirport(airport);
+        assertTrue(result.equals("Dane County Regional Airport"));
+
+        airport.setIataCode("MSN");
+        result = TeamController.formatAirport(airport);
+        assertTrue(result.equals("MSN"));
+
+        airport.setCity("Madison");
+        result = TeamController.formatAirport(airport);
+        assertTrue(result.equals("Madison (MSN)"));
+    }
+
+    @Test
+    void testAirportLabel() {}
+
+    @Test
+    void testFormatLinePosition() {}
+
+    @Test
+    void hasLocationLine() {}
+
+    public void testTeamControllerCalls() {}
 
 }
