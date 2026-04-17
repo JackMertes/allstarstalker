@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -90,8 +91,10 @@ public class TrackingControllerTests {
 
         // for userTracking mappings in MockDataService, check that each is of type team
         for (Map<String, Object> l : userTrackingsList) {
-            assert(l.containsKey("trackingId"));
-            assert(l.get("type").equals("team"));
+            assertTrue(l.containsKey("trackingId"));
+            assertTrue(l.containsKey("team"));
+            assertTrue(l.containsKey("callsign"));
+            assertTrue(l.containsKey("notificationEnabled"));
         }
     }
 
@@ -102,18 +105,31 @@ public class TrackingControllerTests {
     */
     @Test
     public void testAddTracking() {
+        ResponseEntity<?> initialResp = controller.getAllTracking();
+        List<Map<String, Object>> before = (List<Map<String, Object>>) initialResp.getBody();
+        int beforeSize = before == null ? 0 : before.size();
 
-        int userId = 1;
-        ResponseEntity<?> resp = controller.addTracking(); //addTracking(userId);
+        Map<String, Object> payload = Map.of(
+                "team", "Chicago Bulls",
+                "callsign", "DAL8922",
+                "notificationEnabled", true,
+                "createdAt", "2026-04-17T19:38:54.490Z",
+                "updatedAt", "2026-04-17T19:38:54.490Z"
+        );
+
+        ResponseEntity<?> resp = controller.addTracking(payload);
         List<Map<String, Object>> userTrackingList = (List<Map<String, Object>>)resp.getBody();
 
-        assertEquals(((String)userTrackingList.get(0).get("trackingId")), "1");
-        assertEquals(userTrackingList.get(userId-1).get("callsign"), "DAL8924");
-        assertEquals(userTrackingList.get(userId-1).get("team"), "Denver Nuggets (back-end)");
-        assertEquals(userTrackingList.get(userId-1).get("category"), "NBA");
-        assertEquals(userTrackingList.get(userId-1).get("type"), "team");
-        assertEquals(userTrackingList.get(userId-1).get("notificationEnabled"), true);
-        assertEquals(userTrackingList.get(userId-1).get("createdAt"), "2024-02-01T10:00:00");
+        assertThat(userTrackingList).isNotNull();
+        assertEquals(beforeSize + 1, userTrackingList.size());
+
+        Map<String, Object> inserted = userTrackingList.get(userTrackingList.size() - 1);
+        assertEquals("Chicago Bulls", inserted.get("team"));
+        assertEquals("DAL8922", inserted.get("callsign"));
+        assertEquals(true, inserted.get("notificationEnabled"));
+        assertTrue(inserted.containsKey("trackingId"));
+        assertTrue(inserted.containsKey("createdAt"));
+        assertTrue(inserted.containsKey("updatedAt"));
     }
     
     /*

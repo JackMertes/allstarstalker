@@ -63,7 +63,7 @@ describe('FlightDetailsPage', () => {
     renderPage('DAL8924', { flightData: flyingData });
 
     expect(screen.getByText('Denver Nuggets')).toBeInTheDocument();
-    expect(screen.getByText('FLYING')).toBeInTheDocument();
+    expect(screen.getByText('🟢 LIVE — IN FLIGHT')).toBeInTheDocument();
   });
 
   it('shows a back button when flight data is available', () => {
@@ -86,7 +86,7 @@ describe('FlightDetailsPage', () => {
     renderPage('DAL8924');
 
     expect(await screen.findByText('Denver Nuggets')).toBeInTheDocument();
-    expect(screen.getByText('FLYING')).toBeInTheDocument();
+    expect(screen.getByText('🟢 LIVE — IN FLIGHT')).toBeInTheDocument();
   });
 
   it('shows an error when the fetched team is not currently flying', async () => {
