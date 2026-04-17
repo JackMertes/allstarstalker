@@ -1,6 +1,16 @@
 import apiClient from './api';
 
 const trackingService = {
+  // Get all trackings
+  getTracking: async () => {
+    try {
+      const response = await apiClient.get('/tracking');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   // Get user trackings
   getUserTrackings: async (userId) => {
     try {

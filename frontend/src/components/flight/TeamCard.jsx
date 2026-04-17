@@ -4,6 +4,7 @@ import { useNavigate }
 import FlightStatus from './FlightStatus';
 import teamService
   from '../../services/teamService';
+import trackingService from '../../services/trackingService';
 import { useFavorites }
   from '../../hooks/useFavorites';
 
@@ -104,11 +105,37 @@ function TeamCard({ team }) {
     }
   };
 
-  const handleAddToTracking = () => {
-    console.log(
-      'Add to tracking:',
-      team.callsign
-    );
+  const handleAddToTracking = async () => {
+    if (!team.team) {
+      return;
+    }
+
+    try {
+      const trackedItems = await trackingService.getTracking();
+      const alreadyTracked = Array.isArray(trackedItems) && trackedItems.some(
+        item => (
+          item?.team && item.team.toLowerCase() === team.team.toLowerCase()
+        ) || (
+          item?.callsign && team.callsign && item.callsign.toLowerCase() === team.callsign.toLowerCase()
+        )
+      );
+
+      if (alreadyTracked) {
+        alert(`Team is already tracked: ${team.team} (${team.callsign})`);
+        return;
+      }
+
+      await trackingService.addTracking({
+        team: team.team,
+        callsign: team.callsign,
+        notificationEnabled: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      alert(`Added to tracking: ${team.team} (${team.callsign})`);
+    } catch {
+      alert('Failed to add team to tracking.');
+    }
   };
 
   return (

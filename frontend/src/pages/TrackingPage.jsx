@@ -24,8 +24,7 @@ function StatusBadge({ enabled }) {
 // ── Single tracked item row ──────────────────────────────────────────────────
 function TrackedRow({ tracking, onRemove, onToggle }) {
   const label =
-    tracking.type === 'team'     ? tracking.team :
-    tracking.type === 'aircraft' ? `${tracking.tailNumber} — ${tracking.aircraftType}` :
+    tracking.team                ? tracking.team :
     tracking.entityName          ? `${tracking.entityName} (${tracking.entityType})` :
     tracking.flightNumber        ? `Flight ${tracking.flightNumber}` :
     'Unknown';
@@ -38,7 +37,7 @@ function TrackedRow({ tracking, onRemove, onToggle }) {
     <div style={RS.row}>
       {/* Left icon */}
       <div style={RS.iconWrap}>
-        {tracking.type === 'team' ? '🏀' : tracking.type === 'aircraft' ? '✈️' : '📋'}
+        {'🏀'}
       </div>
 
       {/* Info */}
@@ -196,7 +195,7 @@ function TrackingPage() {
       if (match) {
         // Prevent duplicate team tracking
         const alreadyTracked = trackings.some(
-          t => t.type === 'team' && (
+          t => (
             (t.team && t.team.toLowerCase() === match.team.toLowerCase()) ||
             (t.callsign && t.callsign.toLowerCase() === match.callsign.toLowerCase())
           )
@@ -208,14 +207,16 @@ function TrackingPage() {
         // Actually add tracking via API
         try {
           const trackingData = {
-            type: 'team',
             team: match.team,
+            userId:1,
             callsign: match.callsign,
-            category: match.category,
             notificationEnabled: true,
             createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           };
+          console.log(trackingData);
           const apiResult = await trackingService.addTracking(trackingData);
+          console.log(apiResult);
           setTrackings(prev => [
             ...prev,
             {
