@@ -110,7 +110,7 @@ deploy_to_vm:
     - chmod 600 ~/.ssh/id_ed25519
     - ssh-keyscan -H "$VM_HOST" >> ~/.ssh/known_hosts
   script:
-    - rsync -az --delete --exclude '.git' ./ "$VM_USER@$VM_HOST:$DEPLOY_PATH/"
+    - rsync -az --delete --exclude '.git' --exclude '.env.prod' ./ "$VM_USER@$VM_HOST:$DEPLOY_PATH/"
     - ssh "$VM_USER@$VM_HOST" "
         cd $DEPLOY_PATH &&
         docker compose --env-file .env.prod -f docker-compose.yml -f docker-compose.cloud.yml up -d --build --remove-orphans

@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,28 +57,28 @@ public class CheckStatusController {
         statusData.put("callsign", callsign);
 
         Optional<Flight> dbFlight = flightRepository.findByCallsign(callsign);
+
         if (dbFlight.isPresent()) {
             Flight f = dbFlight.get();
             boolean isFlying = "ACTIVE".equalsIgnoreCase(f.getStatus());
             statusData.put("is_flying", isFlying);
 
-            if (f.getLiveLatitude() != null && f.getLiveLongitude() != null) {
+            boolean hasDbPosition = f.getLiveLatitude() != null && f.getLiveLongitude() != null;
+            if (hasDbPosition) {
                 // Build a last_seen timestamp from persisted refresh data.
-                String lastSeen = f.getLastSeenUtc() != null
-                        ? f.getLastSeenUtc().toInstant(ZoneOffset.UTC).toString()
-                        : Instant.now().toString();
-                statusData.put("last_seen", lastSeen);
+                if (f.getLastSeenUtc() != null) {
+                    statusData.put("last_seen", f.getLastSeenUtc().toInstant(ZoneOffset.UTC).toString());
+                }
 
                 // Construct a synthetic ac entry from DB fields so the
                 // frontend FlightDetails component can render the map and info panel.
                 Map<String, Object> acEntry = new HashMap<>();
-                acEntry.put("lat", f.getLiveLatitude());
-                acEntry.put("lon", f.getLiveLongitude());
+                if (f.getLiveLatitude() != null)      acEntry.put("lat", f.getLiveLatitude());
+                if (f.getLiveLongitude() != null)     acEntry.put("lon", f.getLiveLongitude());
                 if (f.getLiveHeadingDeg() != null)    acEntry.put("track", f.getLiveHeadingDeg());
                 if (f.getLiveAltitudeFt() != null)    acEntry.put("alt_baro", f.getLiveAltitudeFt());
                 if (f.getLiveGroundSpeedKt() != null) acEntry.put("gs", f.getLiveGroundSpeedKt());
                 if (f.getAircraftType() != null)      acEntry.put("t", f.getAircraftType());
-                if (f.getTailNumber() != null)        acEntry.put("r", f.getTailNumber());
                 if (f.getFlightNumber() != null)      acEntry.put("flight", f.getFlightNumber());
                 else                                   acEntry.put("flight", callsign);
 

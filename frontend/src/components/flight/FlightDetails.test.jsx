@@ -35,6 +35,7 @@ describe('FlightDetails', () => {
   it('shows fallback when no flightData prop is given', () => {
     render(<FlightDetails />);
     expect(screen.getByText('No Flight Data Available')).toBeInTheDocument();
+
   });
 
   it('shows fallback when raw is null', () => {
@@ -57,36 +58,24 @@ describe('FlightDetails', () => {
     expect(screen.getByText('🟢 LIVE — IN FLIGHT')).toBeInTheDocument();
   });
 
-  it('renders the callsign in flight information', () => {
+  it('renders the flight number in flight information', () => {
     render(<FlightDetails flightData={baseFlight} />);
-    // callsign appears in both the Callsign field and Flight Number field (trimmed)
     expect(screen.getAllByText('DAL8924').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders aircraft registration', () => {
+  it('renders decoded aircraft type', () => {
     render(<FlightDetails flightData={baseFlight} />);
-    expect(screen.getByText('N662DN')).toBeInTheDocument();
-  });
-
-  it('renders aircraft type', () => {
-    render(<FlightDetails flightData={baseFlight} />);
-    expect(screen.getByText('B752')).toBeInTheDocument();
-  });
-
-  it('renders the aircraft description', () => {
-    render(<FlightDetails flightData={baseFlight} />);
-    expect(screen.getByText('BOEING 757-200')).toBeInTheDocument();
+    expect(screen.getByText('Boeing 757-200')).toBeInTheDocument();
   });
 
   it('renders formatted ground speed', () => {
     render(<FlightDetails flightData={baseFlight} />);
-    expect(screen.getByText('559.9 knots')).toBeInTheDocument();
+    expect(screen.getAllByText('559.9 knots').length).toBeGreaterThan(0);
   });
 
   it('renders formatted altitude (barometric)', () => {
     render(<FlightDetails flightData={baseFlight} />);
-    // formatAltitude uses toLocaleString — match the numeric part safely
-    expect(screen.getByText(/33[,.]?000 ft/)).toBeInTheDocument();
+    expect(screen.getAllByText(/33[,.]?000 ft/).length).toBeGreaterThan(0);
   });
 
   it('renders latitude and longitude', () => {
@@ -95,7 +84,7 @@ describe('FlightDetails', () => {
     expect(screen.getByText('-102.7764°')).toBeInTheDocument();
   });
 
-  it('renders N/A for missing optional aircraft fields', () => {
+  it('renders Unavailable for missing optional aircraft fields', () => {
     const sparse = {
       ...baseFlight,
       raw: {
@@ -103,7 +92,7 @@ describe('FlightDetails', () => {
       },
     };
     render(<FlightDetails flightData={sparse} />);
-    const naItems = screen.getAllByText('N/A');
-    expect(naItems.length).toBeGreaterThan(0);
+    const unavailableItems = screen.getAllByText('Unavailable');
+    expect(unavailableItems.length).toBeGreaterThan(0);
   });
 });

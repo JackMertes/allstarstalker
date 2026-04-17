@@ -1,395 +1,345 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   MapContainer, TileLayer,
-  Marker, Popup
+  Marker, Popup, useMap, useMapEvents
 } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
   formatAltitude, formatSpeed
 } from '../../utils/formatters';
+import { getTeamColor } from '../../constants/teamColors';
 import '../../styles/Flight.css';
 
-/* Team colors for header */
-const TEAM_COLORS = {
-  'Atlanta Hawks': '#E03A3E',
-  'Boston Celtics': '#007A33',
-  'Brooklyn Nets': '#000000',
-  'Charlotte Hornets': '#1D1160',
-  'Chicago Bulls': '#CE1141',
-  'Cleveland Cavaliers': '#860038',
-  'Denver Nuggets': '#0E2240',
-  'Detroit Pistons': '#C8102E',
-  'Golden State Warriors': '#1D428A',
-  'Indiana Pacers': '#002D62',
-  'LA Clippers': '#C8102E',
-  'Los Angeles Lakers': '#552583',
-  'Memphis Grizzlies': '#5D76A9',
-  'Miami Heat': '#98002E',
-  'Milwaukee Bucks': '#00471B',
-  'Minnesota Timberwolves': '#0C2340',
-  'New Orleans Pelicans': '#0C2340',
-  'New York Knicks': '#006BB6',
-  'Oklahoma City Thunder': '#007AC1',
-  'Orlando Magic': '#0077C0',
-  'Philadelphia 76ers': '#006BB6',
-  'Phoenix Suns': '#1D1160',
-  'Portland Trail Blazers': '#E03A3E',
-  'Sacramento Kings': '#5A2D81',
-  'San Antonio Spurs': '#C4CED4',
-  'Toronto Raptors': '#CE1141',
-  'Utah Jazz': '#002B5C',
-  'Washington Wizards': '#002B5C',
-};
-
-/* Airplane icon with rotation */
-const airplaneIcon = (track) =>
+/* Airplane icon with rotation, team color, and live/grounded status dot */
+const airplaneIcon = (track, markerSize = 36, color = '#1a73e8', isLive = false) =>
   new L.DivIcon({
     html: `<div style="
-      transform: rotate(${track || 0}deg);
-      transition: transform 0.8s ease;
+      position: relative;
+      width: ${markerSize + 8}px;
+      height: ${markerSize + 8}px;
       display: flex;
       justify-content: center;
       align-items: center;">
-      <svg width="32" height="32"
-        viewBox="0 0 24 24"
-        fill="#1a73e8"
-        xmlns="http://www.w3.org/2000/svg"
-        style="filter: drop-shadow(
-        0px 2px 2px rgba(0,0,0,0.3));">
-        <path d="M21 16v-2l-8-5V3.5
-          c0-.83-.67-1.5-1.5-1.5S10
-          2.67 10 3.5V9l-8 5v2l8-2.5
-          V19l-2 1.5V22l3.5-1 3.5
-          1v-1.5L13 19v-5.5l8
-          2.5z"/>
-      </svg></div>`,
+      <div style="
+        transform: rotate(${track || 0}deg);
+        transition: transform 0.8s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;">
+        <div style="
+          position:absolute;
+          width:${Math.round(markerSize * 0.55)}px;
+          height:${Math.round(markerSize * 0.55)}px;
+          border-radius:999px;
+          background:${color}38;
+          box-shadow:0 0 12px ${color}73;">
+        </div>
+        <svg width="${markerSize}" height="${markerSize}"
+          viewBox="0 0 24 24"
+          fill="${color}"
+          xmlns="http://www.w3.org/2000/svg"
+          style="filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3));">
+          <path d="M21 16v-2l-8-5V3.5
+            c0-.83-.67-1.5-1.5-1.5S10
+            2.67 10 3.5V9l-8 5v2l8-2.5
+            V19l-2 1.5V22l3.5-1 3.5
+            1v-1.5L13 19v-5.5l8
+            2.5z"/>
+        </svg>
+      </div>
+      <div style="
+        position: absolute; top: 2px; right: 2px;
+        width: 9px; height: 9px; border-radius: 50%;
+        background: ${isLive ? '#22c55e' : '#94a3b8'};
+        border: 1.5px solid white;
+        box-shadow: ${isLive ? '0 0 6px 2px #22c55e' : 'none'};">
+      </div>
+    </div>`,
     className: 'custom-airplane-icon',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
+    iconSize: [markerSize + 8, markerSize + 8],
+    iconAnchor: [Math.round((markerSize + 8) / 2), Math.round((markerSize + 8) / 2)],
   });
 
+const getValue = (value) => (
+  value === null || value === undefined || value === '' ? 'Unavailable' : value
+);
+
+const formatCoordinate = (value) => (
+  typeof value === 'number' ? `${value.toFixed(4)}°` : 'Unavailable'
+);
+
+const getCompassDirection = (track) => {
+  if (typeof track !== 'number') {
+    return 'Unavailable';
+  }
+  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  const i = Math.round(track / 45) % 8;
+  return `${track.toFixed(0)}° ${dirs[i]}`;
+};
+
+const decodeAircraftType = (typeCode) => {
+  const map = {
+    B752: 'Boeing 757-200',
+    B753: 'Boeing 757-300',
+    B738: 'Boeing 737-800',
+    B739: 'Boeing 737-900',
+    B77W: 'Boeing 777-300ER',
+    A319: 'Airbus A319',
+    A320: 'Airbus A320',
+    A321: 'Airbus A321'
+  };
+  return map[typeCode] || getValue(typeCode);
+};
+
+const getFreshnessText = (lastSeen) => {
+  if (!lastSeen) {
+    return 'Updated time unavailable';
+  }
+  const seenTs = new Date(lastSeen).getTime();
+  if (Number.isNaN(seenTs)) {
+    return 'Updated time unavailable';
+  }
+  const diffMs = Date.now() - seenTs;
+  if (diffMs < 60000) {
+    return 'Updated just now';
+  }
+  const diffMin = Math.round(diffMs / 60000);
+  if (diffMin < 60) {
+    return `Updated ${diffMin}m ago`;
+  }
+  const diffHr = Math.round(diffMin / 60);
+  if (diffHr < 24) {
+    return `Updated ${diffHr}h ago`;
+  }
+  const diffDay = Math.round(diffHr / 24);
+  return `Updated ${diffDay}d ago`;
+};
+
+function MapBehavior({ interactive, onMapClick, onZoomChange }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (interactive) {
+      map.scrollWheelZoom.enable();
+    } else {
+      map.scrollWheelZoom.disable();
+    }
+  }, [interactive, map]);
+
+  useMapEvents({
+    click: () => onMapClick(),
+    zoomend: (event) => onZoomChange(event.target.getZoom())
+  });
+
+  return null;
+}
+
 function FlightDetails({ flightData }) {
-  /* No data state */
-  if (!flightData?.raw?.ac?.length) {
+  const hasData = !!flightData?.raw?.ac?.length;
+  const isFlying = !!flightData?.is_flying;
+  const ac = hasData ? flightData.raw.ac[0] : {};
+  const pos = [
+    typeof ac.lat === 'number' ? ac.lat : 0,
+    typeof ac.lon === 'number' ? ac.lon : 0
+  ];
+  const color = getTeamColor(flightData?.team) || '#0f1b2d';
+  const timestamp = flightData?.last_seen
+    ? new Date(flightData.last_seen).toLocaleString()
+    : 'Unknown';
+  const mapTimestamp = flightData?.last_seen
+    ? new Date(flightData.last_seen).toLocaleString([], {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    })
+    : 'Unknown';
+  const initialZoom = !isFlying
+    ? 6
+    : (typeof ac.gs === 'number' && ac.gs > 250 ? 4 : 5);
+  const [mapInteractive, setMapInteractive] = useState(false);
+  const [mapZoom, setMapZoom] = useState(initialZoom);
+  const aircraftType = decodeAircraftType(ac.t);
+  const mapBadgeText = isFlying ? 'Live position' : 'Last known position';
+  const freshnessText = getFreshnessText(flightData?.last_seen);
+  const markerSize = mapZoom >= 9 ? 46 : mapZoom >= 7 ? 42 : 38;
+  // pass team color and live status so the icon matches the team and shows the right dot
+  const markerIcon = useMemo(
+    () => airplaneIcon(ac.track, markerSize, color, isFlying),
+    [ac.track, markerSize, color, isFlying]
+  );
+
+  useEffect(() => {
+    setMapInteractive(false);
+    setMapZoom(initialZoom);
+  }, [initialZoom, flightData?.callsign]);
+
+  const quickStats = [
+    {
+      label: 'Altitude',
+      value: typeof ac.alt_baro === 'number'
+        ? formatAltitude(ac.alt_baro)
+        : 'Unavailable'
+    },
+    {
+      label: 'Ground Speed',
+      value: typeof ac.gs === 'number'
+        ? formatSpeed(ac.gs)
+        : 'Unavailable'
+    },
+    {
+      label: 'Heading',
+      value: getCompassDirection(ac.track)
+    },
+    {
+      label: 'Flight Number',
+      value: getValue(ac.flight?.trim() || flightData?.callsign)
+    }
+  ];
+
+  if (!hasData) {
     return (
-      <div style={{
-        textAlign: 'center',
-        padding: '60px 20px',
-        color: '#6b7a8d'
-      }}>
-        <div style={{
-          fontSize: '48px'
-        }}>
-          ✈️
-        </div>
-        <h3>No Flight Data Available</h3>
+      <div className="flight-empty-state">
+        <h3>No flight information available yet</h3>
+        <p>This team page is working. We just do not have trackable flight data yet.</p>
       </div>
     );
   }
 
-  /* Pull out data we need */
-  const isFlying = flightData.is_flying;
-  const ac = flightData.raw.ac[0];
-  const pos = [ac.lat, ac.lon];
-  const color =
-    TEAM_COLORS[flightData.team]
-    || '#0f1b2d';
-
   return (
     <div className="flight-details">
-
-      {/* Team Color Header */}
-      <div style={{
-        background: color,
-        padding: '24px',
-        borderRadius: '12px',
-        marginBottom: '24px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow:
-          '0 4px 12px rgba(0,0,0,0.15)'
-      }}>
-        <h1 style={{
-          margin: 0,
-          color: '#fff',
-          fontSize: '24px'
-        }}>
-          {flightData.team}
-        </h1>
-        <span style={{
-          background: isFlying
-            ? 'rgba(46,204,113,0.9)'
-            : 'rgba(255,255,255,0.2)',
-          color: '#fff',
-          padding: '8px 16px',
-          borderRadius: '20px',
-          fontWeight: '600',
-          fontSize: '13px'
-        }}>
-          {isFlying
-            ? '🟢 LIVE — IN FLIGHT'
-            : '🛬 NOT FLYING'}
-        </span>
+      <div className="flight-hero" style={{ backgroundColor: color }}>
+        <div>
+          <p className="flight-hero-label">Team Flight Tracker</p>
+          <h1 className="flight-hero-title">{flightData.team}</h1>
+        </div>
+        <div className="flight-hero-badges">
+          <span className={`flight-hero-status ${isFlying ? 'live' : 'grounded'}`}>
+            {isFlying ? 'FLYING' : 'NOT FLYING'}
+          </span>
+        </div>
       </div>
 
-      {/* Map Section */}
-      <h2>
-        {isFlying
-          ? '🗺️ Live Flight Map'
-          : '📍 Last Known Location'}
-      </h2>
-      <div style={{
-        height: '350px',
-        width: '100%',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        boxShadow:
-          '0 4px 12px rgba(0,0,0,0.1)',
-        marginBottom: '32px',
-        border: '1px solid #ddd'
-      }}>
-        <MapContainer
-          center={pos}
-          zoom={6}
-          scrollWheelZoom={false}
-          style={{
-            height: '100%',
-            width: '100%',
-            zIndex: 1
-          }}
-        >
-          <TileLayer
-            attribution={
-              '&copy; OpenStreetMap'
-            }
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <Marker
-            position={pos}
-            icon={
-              airplaneIcon(ac.track)
-            }
+      <section className="flight-section">
+        <div className="quick-stats-grid">
+          {quickStats.map((stat) => (
+            <div key={stat.label} className={`quick-stat-card ${stat.tone || ''}`.trim()}>
+              <span className="quick-stat-label">{stat.label}</span>
+              <span className="quick-stat-value">{stat.value}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="flight-section">
+        <div className="flight-section-header">
+          <h2>{isFlying ? 'Live Flight Map' : 'Last Known Location'}</h2>
+        </div>
+        <div className="flight-map-shell">
+          <div className="flight-map-overlay">
+            <span>{mapBadgeText}</span>
+            <span>{mapTimestamp}</span>
+            <span>{freshnessText}</span>
+          </div>
+          {!mapInteractive && (
+            <button
+              type="button"
+              className="flight-map-interaction-hint"
+              onClick={() => setMapInteractive(true)}
+            >
+              Click map to enable zoom
+            </button>
+          )}
+          <MapContainer
+            center={pos}
+            zoom={initialZoom}
+            scrollWheelZoom={false}
+            style={{
+              height: '100%',
+              width: '100%',
+              zIndex: 1
+            }}
           >
-            <Popup>
-              <strong>
-                {flightData.callsign}
-              </strong>
-              <br />
-              {ac.desc || 'Aircraft'}
-            </Popup>
-          </Marker>
-        </MapContainer>
-      </div>
+            <TileLayer
+              attribution={
+                '&copy; OpenStreetMap'
+              }
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <MapBehavior
+              interactive={mapInteractive}
+              onMapClick={() => setMapInteractive(true)}
+              onZoomChange={setMapZoom}
+            />
+            <Marker
+              position={pos}
+              icon={markerIcon}
+            >
+              <Popup>
+                <strong>
+                  {flightData?.callsign || 'Unknown'}
+                </strong>
+                <br />
+                {ac.desc || 'Unavailable'}
+              </Popup>
+            </Marker>
+          </MapContainer>
+        </div>
+      </section>
 
-      {/* Flight Info */}
-      <h2>✈️ Flight Information</h2>
-      <div className="details-grid">
-        <div className="detail-item">
-          <strong>
-            📡 Callsign
-          </strong>
-          <span>
-            {flightData.callsign}
-          </span>
+      <section className="flight-section">
+        <div className="flight-section-header">
+          <h2>Flight Details</h2>
         </div>
-        <div className="detail-item">
-          <strong>
-            ✈️ Flight Number
-          </strong>
-          <span>
-            {ac.flight?.trim()
-              || 'N/A'}
-          </span>
-        </div>
-        <div className="detail-item">
-          <strong>
-            🏷️ Registration
-          </strong>
-          <span>
-            {ac.r || 'N/A'}
-          </span>
-        </div>
-        <div className="detail-item">
-          <strong>
-            🛩️ Aircraft Type
-          </strong>
-          <span>
-            {ac.t || 'N/A'}
-          </span>
-        </div>
-        <div className="detail-item">
-          <strong>
-            📋 Description
-          </strong>
-          <span>
-            {ac.desc || 'N/A'}
-          </span>
-        </div>
-        <div className="detail-item">
-          <strong>
-            🏢 Owner/Operator
-          </strong>
-          <span>
-            {ac.ownOp || 'N/A'}
-          </span>
-        </div>
-        <div className="detail-item">
-          <strong>
-            📅 Year
-          </strong>
-          <span>
-            {ac.year || 'N/A'}
-          </span>
-        </div>
-        <div className="detail-item">
-          <strong>
-            📻 Squawk
-          </strong>
-          <span>
-            {ac.squawk || 'N/A'}
-          </span>
-        </div>
-      </div>
-
-      {/* Position Info */}
-      <h2 style={{ marginTop: '32px' }}>
-        {isFlying
-          ? '📍 Current Position'
-          : '📍 Last Known Position'}
-      </h2>
-      <div style={{
-        background: '#f8f9fa',
-        padding: '24px',
-        borderRadius: '8px'
-      }}>
+        <h3 className="flight-subsection-title">Aircraft Information</h3>
         <div className="details-grid">
           <div className="detail-item">
-            <strong>
-              📍 Latitude
-            </strong>
-            <span>
-              {ac.lat
-                ? ac.lat.toFixed(4)
-                  + '°'
-                : 'N/A'}
+            <span className="detail-label">Flight Number</span>
+            <span className="detail-value">{getValue(ac.flight?.trim() || flightData.callsign)}</span>
+          </div>
+          <div className="detail-item">
+            <span className="detail-label">Aircraft</span>
+            <span className="detail-value">{aircraftType}</span>
+          </div>
+        </div>
+
+        <h3 className="flight-subsection-title">
+          {isFlying ? 'Current Position' : 'Last Known Position'}
+        </h3>
+        <div className="details-grid">
+          <div className="detail-item">
+            <span className="detail-label">Latitude</span>
+            <span className="detail-value">{formatCoordinate(ac.lat)}</span>
+          </div>
+          <div className="detail-item">
+            <span className="detail-label">Longitude</span>
+            <span className="detail-value">{formatCoordinate(ac.lon)}</span>
+          </div>
+          <div className="detail-item">
+            <span className="detail-label">Altitude</span>
+            <span className="detail-value">
+              {typeof ac.alt_baro === 'number' ? formatAltitude(ac.alt_baro) : 'Unavailable'}
             </span>
           </div>
           <div className="detail-item">
-            <strong>
-              🧭 Longitude
-            </strong>
-            <span>
-              {ac.lon
-                ? ac.lon.toFixed(4)
-                  + '°'
-                : 'N/A'}
-            </span>
-          </div>
-          <div className="detail-item">
-            <strong>
-              ⬆️ Alt (Baro)
-            </strong>
-            <span>
-              {ac.alt_baro
-                ? formatAltitude(
-                    ac.alt_baro)
-                : 'N/A'}
-            </span>
-          </div>
-          <div className="detail-item">
-            <strong>
-              📐 Alt (Geo)
-            </strong>
-            <span>
-              {ac.alt_geom
-                ? formatAltitude(
-                    ac.alt_geom)
-                : 'N/A'}
-            </span>
-          </div>
-          <div className="detail-item">
-            <strong>
-              💨 Ground Speed
-            </strong>
-            <span>
-              {ac.gs
-                ? formatSpeed(ac.gs)
-                : 'N/A'}
-            </span>
-          </div>
-          <div className="detail-item">
-            <strong>
-              🔄 Track
-            </strong>
-            <span>
-              {ac.track
-                ? ac.track.toFixed(2)
-                  + '°'
-                : 'N/A'}
-            </span>
-          </div>
-          <div className="detail-item">
-            <strong>
-              📈 Vertical Rate
-            </strong>
-            <span>
-              {ac.baro_rate
-                ? `${ac.baro_rate} ft/min`
-                : 'N/A'}
-            </span>
-          </div>
-          <div className="detail-item">
-            <strong>
-              🕐 Last Seen
-            </strong>
-            <span>
-              {isFlying && ac.seen
-                ? `${ac.seen.toFixed(1)}s ago`
-                : flightData.last_seen
-                  ? new Date(
-                      flightData.last_seen
-                    ).toLocaleString()
-                  : 'N/A'}
+            <span className="detail-label">Ground Speed</span>
+            <span className="detail-value">
+              {typeof ac.gs === 'number' ? formatSpeed(ac.gs) : 'Unavailable'}
             </span>
           </div>
         </div>
-      </div>
-            {/* Footer Timestamp */}
-      <div style={{
-        marginTop: '16px',
-        padding: '16px',
-        background: isFlying
-          ? '#e8f4f8'
-          : '#fef3e2',
-        borderRadius: '8px'
-      }}>
-        <p style={{
-          margin: 0,
-          fontSize: '14px',
-          color: '#2c3e50'
-        }}>
-          <strong>
-            {isFlying
-              ? '🕐 Last Updated:'
-              : '🕐 Last Seen:'}
-          </strong>{' '}
-          {flightData.last_seen
-            ? new Date(
-                flightData.last_seen
-              ).toLocaleString()
-            : 'Unknown'}
-          {!isFlying && (
-            <span style={{
-              marginLeft: '12px',
-              color: '#e67e22',
-              fontStyle: 'italic'
-            }}>
-              (not currently flying)
-            </span>
-          )}
-        </p>
+      </section>
+
+      <div className={`flight-timestamp ${isFlying ? 'live' : 'grounded'}`}>
+        <span className="flight-timestamp-label">
+          {isFlying ? 'Last Updated' : 'Last Seen'}
+        </span>
+        <span className="flight-timestamp-value">
+          {timestamp}
+        </span>
       </div>
 
     </div>
