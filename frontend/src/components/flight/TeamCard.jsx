@@ -113,43 +113,7 @@ function TeamCard({ team }) {
         }
       />
 
-      <button
-        onClick={() =>
-          toggle(team.callsign)
-        }
-        aria-label={
-          isFav
-            ? 'Remove from favorites'
-            : 'Add to favorites'
-        }
-        style={{
-          position: 'absolute',
-          top: 10,
-          right: 12,
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          fontSize: '20px',
-          lineHeight: 1,
-          padding: '2px 4px',
-          borderRadius: 6,
-          transition: 'transform 0.15s',
-          zIndex: 2,
-          filter: isFav
-            ? 'none'
-            : 'grayscale(1) opacity(0.45)',
-        }}
-        onMouseEnter={e =>
-          e.currentTarget.style.transform
-            = 'scale(1.25)'
-        }
-        onMouseLeave={e =>
-          e.currentTarget.style.transform
-            = 'scale(1)'
-        }
-      >
-        ⭐
-      </button>
+      
 
       {/* TEAM-COLORED HEADER BAR */}
       <div

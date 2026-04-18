@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -112,9 +113,21 @@ public class TrackingController {
         return resp;
     }
 
-    @DeleteMapping("/{trackingId}")
-    public ResponseEntity<String> removeTracking(@PathVariable int trackingId) {
-        return ResponseEntity.ok("Implement DELETE service. Given trackingID: " + trackingId);
+    @DeleteMapping("")
+    public ResponseEntity<String> removeTracking(@RequestParam String callsign) {
+        if (callsign == null || callsign.isBlank()) {
+            return ResponseEntity.badRequest().body("delete failed: callsign is required");
+        }
+
+        try {
+            long deletedCount = trackingRepo.deleteByCallsignIgnoreCase(callsign.trim());
+            if (deletedCount > 0) {
+                return ResponseEntity.status(204).body("deleted successfully the " + callsign.trim());
+            }
+            return ResponseEntity.status(404).body("delete failed: callsign not found " + callsign.trim());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("delete failed: internal server error");
+        }
     }
 
     /*

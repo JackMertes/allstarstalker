@@ -32,10 +32,12 @@ const trackingService = {
   },
 
   // Remove tracking
-  removeTracking: async (trackingId) => {
+  removeTracking: async (callsign) => {
     try {
-      const response = await apiClient.delete(`/tracking/${trackingId}`);
-      return response.data;
+      const response = await apiClient.delete('/tracking', {
+        params: { callsign },
+      });
+      return response;
     } catch (error) {
       throw error;
     }

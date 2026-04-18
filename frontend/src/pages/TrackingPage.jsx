@@ -63,7 +63,7 @@ function TrackedRow({ tracking, onRemove, onToggle }) {
       <StatusBadge enabled={tracking.notificationEnabled} />
 
       {/* Remove */}
-      <button onClick={() => onRemove(tracking.trackingId)} style={RS.removeBtn}>
+      <button onClick={() => onRemove(tracking.callsign)} style={RS.removeBtn}>
         Remove
       </button>
     </div>
@@ -235,8 +235,25 @@ function TrackingPage() {
     }
   };
 
-  const handleRemove = (id) =>
-    setTrackings(prev => prev.filter(t => t.trackingId !== id));
+  const handleRemove = async (callsign) => {
+    if (!callsign) {
+      alert('Unable to remove tracking: callsign is missing.');
+      return;
+    }
+
+    try {
+      console.log("Attempting to remove tracking for callsign:", callsign);
+      const response = await trackingService.removeTracking(callsign);
+      console.log("remove response:", response);
+      if (response?.status === 204) {
+        setTrackings(prev => prev.filter(t =>
+          String(t.callsign || '').toLowerCase() !== String(callsign).toLowerCase()
+        ));
+      }
+    } catch {
+      // Keep UI unchanged when remove request fails.
+    }
+  };
 
   const handleToggle = (id) =>
     setTrackings(prev => prev.map(t =>
