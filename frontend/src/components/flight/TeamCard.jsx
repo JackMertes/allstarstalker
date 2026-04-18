@@ -5,8 +5,6 @@ import FlightStatus from './FlightStatus';
 import teamService
   from '../../services/teamService';
 import trackingService from '../../services/trackingService';
-import { useFavorites }
-  from '../../hooks/useFavorites';
 import { getTeamColor } from '../../constants/teamColors';
 
 // Builds location display string
