@@ -23,13 +23,9 @@ function TeamCard({ team }) {
   const navigate = useNavigate();
   const [loading, setLoading] =
     useState(false);
-  const { isFavorite, toggle } =
-    useFavorites();
 
   const isLive =
     team.status === 'ACTIVE';
-  const isFav =
-    isFavorite(team.callsign);
   // Get team's primary color
   const headerColor =
     getTeamColor(team.team);
