@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import teamService from '../services/teamService';
 import trackingService from '../services/trackingService';
+import useTracking from '../hooks/useTracking';
 
 // ── Status badge ─────────────────────────────────────────────────────────────
 function StatusBadge({ enabled }) {
@@ -163,22 +164,7 @@ const AT = {
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 function TrackingPage() {
-  const [trackings, setTrackings] = useState([]);
-  const [loading, setLoading]     = useState(true);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await trackingService.getTrackings();
-        setTrackings(Array.isArray(data) ? data : []);
-      } catch {
-        setTrackings([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
+  const { trackings, setTrackings, loading, error } = useTracking();
 
   const handleAdd = async (value) => {
     try {
@@ -267,6 +253,12 @@ function TrackingPage() {
         <h2 style={{ marginTop: 0, marginBottom: 16, fontSize: 18, fontWeight: 700 }}>
           Your Tracked Items ({loading ? '…' : trackings.length})
         </h2>
+
+        {error && (
+          <div style={{ marginBottom: 16, color: '#b91c1c', fontSize: 14 }}>
+            Could not load tracking data.
+          </div>
+        )}
 
         {loading ? (
           <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--runway-gray)' }}>
