@@ -4,11 +4,9 @@ import TeamList from '../components/flight/TeamList';
 import { TeamGridSkeleton } from '../components/common/TeamCardSkeleton';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { useApp } from '../context/AppContext';
-import { useFavorites } from '../hooks/useFavorites';
 import teamService from '../services/teamService';
 import { mockTeams, searchTeams } from '../utils/mockData';
 import { filterTeamsBySearchTerm } from '../utils/teamApiMapper';
-import { TeamCard } from '../components/flight';
 import '../styles/Flight.css';
 
 const USE_MOCK = false;
@@ -50,7 +48,6 @@ function SearchPage() {
     searchResults, setSearchResults,
   } = useApp();
 
-  const { isFavorite } = useFavorites();
   const [sortMode, setSortMode]         = useState('active');
   const [showSortMenu, setShowSortMenu] = useState(false);
   /** Full list from API (or mock); search filters this without re-fetching */
@@ -121,10 +118,6 @@ function SearchPage() {
 
   const sorted = sortTeams(searchResults || [], sortMode);
 
-  // Teams the user has starred
-  const favoriteTeams = sorted.filter(t => isFavorite(t.callsign));
-  const otherTeams    = sorted.filter(t => !isFavorite(t.callsign));
-
   return (
     <div className="search-page">
       <h1 style={{ fontSize: 'clamp(22px,3.5vw,30px)', fontWeight: 800, color: 'var(--jet-navy)', marginBottom: 4 }}>
@@ -190,37 +183,10 @@ function SearchPage() {
       {/* ── Skeleton while loading ── */}
       {loading && <TeamGridSkeleton count={8} />}
 
-      {/* ── Favorites strip ── */}
-      {!loading && favoriteTeams.length > 0 && (
-        <div style={{ marginBottom: 36 }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            marginBottom: 16,
-          }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '3px', color: '#FBBF24', textTransform: 'uppercase' }}>
-              ⭐ FAVORITES
-            </span>
-            <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg,#FBBF2440,transparent)' }} />
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
-            {favoriteTeams.map((team, i) => (
-              <TeamCard key={team.callsign || i} team={team} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── All other teams ── */}
+      {/* ── Teams list ── */}
       {!loading && (
         <>
-          {favoriteTeams.length > 0 && otherTeams.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '3px', color: 'var(--runway-gray)', textTransform: 'uppercase' }}>
-                ALL TEAMS
-              </span>
-            </div>
-          )}
-          <TeamList teams={otherTeams} />
+          <TeamList teams={sorted} />
         </>
       )}
     </div>
