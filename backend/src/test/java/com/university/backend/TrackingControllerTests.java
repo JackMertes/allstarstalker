@@ -7,16 +7,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @AutoConfigureRestTestClient
@@ -29,6 +28,9 @@ class TrackingControllerTests {
     @Autowired
     private TrackingController controller;
 
+    @MockitoBean
+    private TrackingRepository trackingRepo;
+
     @Test
     void contextLoads() {
         assertThat(controller).isNotNull();
@@ -36,82 +38,93 @@ class TrackingControllerTests {
     }
 
     @Test
-    void getAllTracking_returnsSeedData() {
-        ResponseEntity<List<Map<String, Object>>> response = controller.getAllTracking();
+    void getAllTracking_returnsMappedResults() {
+        TrackingItem item = new TrackingItem();
+        item.setId(1L);
+        item.setUserId(7L);
+        item.setTeam("Chicago Bulls");
+        item.setCallsign("DAL8922");
+        item.setNotificationEnabled(true);
+
+        when(trackingRepo.findAll()).thenReturn(List.of(item));
+
+        ResponseEntity<?> response = controller.getAllTracking();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotEmpty();
+        assertThat(response.getBody()).isInstanceOf(List.class);
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> body = (List<Map<String, Object>>) response.getBody();
+        assertThat(body).hasSize(1);
+        assertThat(body.get(0))
+                .containsEntry("trackingId", 1L)
+                .containsEntry("userId", 7L)
+                .containsEntry("team", "Chicago Bulls")
+                .containsEntry("callsign", "DAL8922")
+                .containsEntry("notificationEnabled", true);
     }
 
     @Test
-    void addUpdateAndRemoveTracking_roundTrips() {
-        Map<String, Object> tracking = Map.of(
-                "type", "team",
-                "team", "Test Team",
+    void addTracking_returnsBadRequest_whenTeamMissing() {
+        ResponseEntity<?> response = controller.addTracking(Map.of(
                 "callsign", "TEST123",
-                "category", "NBA",
                 "notificationEnabled", true
-        );
+        ));
 
-        ResponseEntity<Map<String, Object>> createdResponse = controller.addTracking(tracking);
-        String trackingId = String.valueOf(createdResponse.getBody().get("trackingId"));
-
-        // for userTracking mappings in MockDataService, check that each is of type team
-        for (Map<String, Object> l : userTrackingsList) {
-            assertTrue(l.containsKey("trackingId"));
-            assertTrue(l.containsKey("team"));
-            assertTrue(l.containsKey("callsign"));
-            assertTrue(l.containsKey("notificationEnabled"));
-        }
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isEqualTo(Map.of("error", "team is required"));
     }
 
-    /*
-     * Tests the functionality of TrackingController#getAddTracking()
-     * Checks are for mock data
-     * Request is GET via "/api/tracking/user/{userId}"
-    */
     @Test
-    public void testAddTracking() {
-        ResponseEntity<?> initialResp = controller.getAllTracking();
-        List<Map<String, Object>> before = (List<Map<String, Object>>) initialResp.getBody();
-        int beforeSize = before == null ? 0 : before.size();
+    void addTracking_savesAndReturnsMappedResults() {
+        TrackingItem savedItem = new TrackingItem();
+        savedItem.setId(42L);
+        savedItem.setTeam("Chicago Bulls");
+        savedItem.setCallsign("DAL8922");
+        savedItem.setNotificationEnabled(true);
+
+        when(trackingRepo.save(any(TrackingItem.class))).thenReturn(savedItem);
+        when(trackingRepo.findAll()).thenReturn(List.of(savedItem));
 
         Map<String, Object> payload = Map.of(
                 "team", "Chicago Bulls",
                 "callsign", "DAL8922",
-                "notificationEnabled", true,
-                "createdAt", "2026-04-17T19:38:54.490Z",
-                "updatedAt", "2026-04-17T19:38:54.490Z"
+                "notificationEnabled", true
         );
 
-        ResponseEntity<?> resp = controller.addTracking(payload);
-        List<Map<String, Object>> userTrackingList = (List<Map<String, Object>>)resp.getBody();
+        ResponseEntity<?> response = controller.addTracking(payload);
 
-        assertThat(userTrackingList).isNotNull();
-        assertEquals(beforeSize + 1, userTrackingList.size());
-
-        Map<String, Object> inserted = userTrackingList.get(userTrackingList.size() - 1);
-        assertEquals("Chicago Bulls", inserted.get("team"));
-        assertEquals("DAL8922", inserted.get("callsign"));
-        assertEquals(true, inserted.get("notificationEnabled"));
-        assertTrue(inserted.containsKey("trackingId"));
-        assertTrue(inserted.containsKey("createdAt"));
-        assertTrue(inserted.containsKey("updatedAt"));
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isInstanceOf(List.class);
+        List<?> body = (List<?>) response.getBody();
+        assertThat(body).hasSize(1);
+        assertThat(body.get(0)).isInstanceOf(Map.class);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> item = (Map<String, Object>) body.get(0);
+        assertThat(item)
+                .containsEntry("trackingId", 42L)
+                .containsEntry("team", "Chicago Bulls")
+                .containsEntry("callsign", "DAL8922")
+                .containsEntry("notificationEnabled", true)
+                .containsEntry("userId", null)
+                .containsEntry("createdAt", null)
+                .containsEntry("updatedAt", null);
     }
-    
-    /*
-     * Tests the functionality of TrackingController#getUserTracking()
-     * Checks are for mock data
-     * Request is POST via "/api/tracking/"
-    */
-    @Test
-    public void testGetUserTracking() {assert(true);}
 
-    /*
-     * Tests the functionality of TrackingController#removeTracking()
-     * Checks are for mock data
-     * Request is DELETE via "/api/tracking/{trackingId}"
-    */
     @Test
-    public void testRemoveTracking() {assert(true);}
+    void removeTracking_returnsBadRequest_whenCallsignMissing() {
+        ResponseEntity<String> response = controller.removeTracking("  ");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isEqualTo("delete failed: callsign is required");
+    }
+
+    @Test
+    void removeTracking_returnsNoContent_whenDeleted() {
+        when(trackingRepo.deleteByCallsignIgnoreCase("TEST123")).thenReturn(1L);
+
+        ResponseEntity<String> response = controller.removeTracking("TEST123");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(response.getBody()).isEqualTo("deleted successfully the TEST123");
+    }
 }
