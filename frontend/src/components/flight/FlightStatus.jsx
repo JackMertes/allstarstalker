@@ -50,7 +50,7 @@ function FlightStatus({ status }) {
           `0 2px 6px ${color}40`,
       }}
     >
-      {icon} {label}
+      {label}
     </span>
   );
 }

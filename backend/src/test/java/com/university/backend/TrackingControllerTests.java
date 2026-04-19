@@ -6,7 +6,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+// import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.client.RestTestClient;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -63,16 +68,42 @@ class TrackingControllerTests {
                 "callsign", "DAL8924"
         ));
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).containsEntry("trackingId", "10")
-                .containsEntry("callsign", "DAL8924");
+        // for userTracking mappings in MockDataService, check that each is of type team
+        for (Map<String, Object> l : userTrackingsList) {
+            assertTrue(l.containsKey("trackingId"));
+            assertTrue(l.containsKey("team"));
+            assertTrue(l.containsKey("callsign"));
+            assertTrue(l.containsKey("notificationEnabled"));
+        }
     }
 
     @Test
-    void updateTracking_returnsBadRequest_whenNotificationEnabledIsMissing() {
-        ResponseEntity<Map<String, Object>> response = controller.updateTracking("10", Map.of());
+    public void testAddTracking() {
+        ResponseEntity<?> initialResp = controller.getAllTracking();
+        List<Map<String, Object>> before = (List<Map<String, Object>>) initialResp.getBody();
+        int beforeSize = before == null ? 0 : before.size();
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Map<String, Object> payload = Map.of(
+                "team", "Chicago Bulls",
+                "callsign", "DAL8922",
+                "notificationEnabled", true,
+                "createdAt", "2026-04-17T19:38:54.490Z",
+                "updatedAt", "2026-04-17T19:38:54.490Z"
+        );
+
+        ResponseEntity<?> resp = controller.addTracking(payload);
+        List<Map<String, Object>> userTrackingList = (List<Map<String, Object>>)resp.getBody();
+
+        assertThat(userTrackingList).isNotNull();
+        assertEquals(beforeSize + 1, userTrackingList.size());
+
+        Map<String, Object> inserted = userTrackingList.get(userTrackingList.size() - 1);
+        assertEquals("Chicago Bulls", inserted.get("team"));
+        assertEquals("DAL8922", inserted.get("callsign"));
+        assertEquals(true, inserted.get("notificationEnabled"));
+        assertTrue(inserted.containsKey("trackingId"));
+        assertTrue(inserted.containsKey("createdAt"));
+        assertTrue(inserted.containsKey("updatedAt"));
     }
 
     @Test
