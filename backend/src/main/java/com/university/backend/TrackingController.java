@@ -5,15 +5,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
-//import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 //import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 
 
 /**
@@ -26,13 +28,26 @@ import org.springframework.web.client.RestTemplate;
 @RequestMapping("/api/tracking")
 public class TrackingController {
 
-    private final RestTemplate restTemplate;
-    private final MockDataService mock;
-    Team team;
+    private final TrackingRepository trackingRepo;
 
-    public TrackingController(RestTemplate restTemplate, MockDataService mock) {
-        this.restTemplate = restTemplate;
-        this.mock = mock;
+    public TrackingController(TrackingRepository trackingRepo) {
+        this.trackingRepo = trackingRepo;
+    }
+
+    private List<Map<String, Object>> toTrackingMappings(List<TrackingItem> trackedItems) {
+        List<Map<String, Object>> trackingMappings = new ArrayList<>();
+        for (TrackingItem item : trackedItems) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("trackingId", item.getId());
+            row.put("userId", item.getUserId());
+            row.put("team", item.getTeam());
+            row.put("callsign", item.getCallsign());
+            row.put("notificationEnabled", item.getNotificationEnabled());
+            row.put("createdAt", item.getCreatedAt());
+            row.put("updatedAt", item.getUpdatedAt());
+            trackingMappings.add(row);
+        }
+        return trackingMappings;
     }
 
     /**
@@ -41,16 +56,7 @@ public class TrackingController {
      */
     @GetMapping("")
     public ResponseEntity<?> getAllTracking() {
-        try {
-            return restTemplate.getForEntity(
-                    "https://allanswers.com/api/tracking",
-                    Object.class);
-        } catch (Exception e) {
-            return ResponseEntity.ok(mock.getUserTrackings());
-        }
-
-
-
+        return ResponseEntity.ok(toTrackingMappings(trackingRepo.findAll()));
     }
     
     /**
@@ -58,15 +64,29 @@ public class TrackingController {
      * @return
      */
     @PostMapping("") //@GetMapping("/user/{userId}")
-    public ResponseEntity<?> addTracking(/*@PathVariable int userId*/) {
-        /*try {
-            return restTemplate.getForEntity(
-                    "https://allanswers.com/api/tracking/user/" + userId,
-                    Object.class);
-        } catch (Exception e) {
-            return ResponseEntity.ok(mock.getUserTrackings());
-        }*/
-       return ResponseEntity.ok(mock.getUserTrackings());
+    public ResponseEntity<?> addTracking(@RequestBody Map<String, Object> request) {
+        Object teamValue = request != null ? request.get("team") : null;
+        String teamName = teamValue instanceof String ? ((String) teamValue).trim() : null;
+        if (teamName == null || teamName.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "team is required"));
+        }
+
+        Object callsignValue = request.get("callsign");
+        String callsign = callsignValue instanceof String ? (String) callsignValue : null;
+
+        Boolean notificationEnabled = Boolean.TRUE;
+        Object notifValue = request.get("notificationEnabled");
+        if (notifValue instanceof Boolean) {
+            notificationEnabled = (Boolean) notifValue;
+        }
+
+        TrackingItem item = new TrackingItem();
+        item.setTeam(teamName);
+        item.setCallsign(callsign);
+        item.setNotificationEnabled(notificationEnabled);
+
+        trackingRepo.save(item);
+        return ResponseEntity.ok(toTrackingMappings(trackingRepo.findAll()));
     }
 
     /*
@@ -93,9 +113,21 @@ public class TrackingController {
         return resp;
     }
 
-    @DeleteMapping("/{trackingId}")
-    public ResponseEntity<String> removeTracking(@PathVariable int trackingId) {
-        return ResponseEntity.ok("Implement DELETE service. Given trackingID: " + trackingId);
+    @DeleteMapping("")
+    public ResponseEntity<String> removeTracking(@RequestParam String callsign) {
+        if (callsign == null || callsign.isBlank()) {
+            return ResponseEntity.badRequest().body("delete failed: callsign is required");
+        }
+
+        try {
+            long deletedCount = trackingRepo.deleteByCallsignIgnoreCase(callsign.trim());
+            if (deletedCount > 0) {
+                return ResponseEntity.status(204).body("deleted successfully the " + callsign.trim());
+            }
+            return ResponseEntity.status(404).body("delete failed: callsign not found " + callsign.trim());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("delete failed: internal server error");
+        }
     }
 
     /*

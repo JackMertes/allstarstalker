@@ -4,8 +4,7 @@ import { useNavigate }
 import FlightStatus from './FlightStatus';
 import teamService
   from '../../services/teamService';
-import { useFavorites }
-  from '../../hooks/useFavorites';
+import trackingService from '../../services/trackingService';
 import { getTeamColor } from '../../constants/teamColors';
 
 // Builds location display string
@@ -22,13 +21,9 @@ function TeamCard({ team }) {
   const navigate = useNavigate();
   const [loading, setLoading] =
     useState(false);
-  const { isFavorite, toggle } =
-    useFavorites();
 
   const isLive =
     team.status === 'ACTIVE';
-  const isFav =
-    isFavorite(team.callsign);
   // Get team's primary color
   const headerColor =
     getTeamColor(team.team);
@@ -65,11 +60,37 @@ function TeamCard({ team }) {
     }
   };
 
-  const handleAddToTracking = () => {
-    console.log(
-      'Add to tracking:',
-      team.callsign
-    );
+  const handleAddToTracking = async () => {
+    if (!team.team) {
+      return;
+    }
+
+    try {
+      const trackedItems = await trackingService.getTracking();
+      const alreadyTracked = Array.isArray(trackedItems) && trackedItems.some(
+        item => (
+          item?.team && item.team.toLowerCase() === team.team.toLowerCase()
+        ) || (
+          item?.callsign && team.callsign && item.callsign.toLowerCase() === team.callsign.toLowerCase()
+        )
+      );
+
+      if (alreadyTracked) {
+        alert(`Team is already tracked: ${team.team} (${team.callsign})`);
+        return;
+      }
+
+      await trackingService.addTracking({
+        team: team.team,
+        callsign: team.callsign,
+        notificationEnabled: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      alert(`Added to tracking: ${team.team} (${team.callsign})`);
+    } catch {
+      alert('Failed to add team to tracking.');
+    }
   };
 
   return (
@@ -86,43 +107,7 @@ function TeamCard({ team }) {
         }
       />
 
-      <button
-        onClick={() =>
-          toggle(team.callsign)
-        }
-        aria-label={
-          isFav
-            ? 'Remove from favorites'
-            : 'Add to favorites'
-        }
-        style={{
-          position: 'absolute',
-          top: 10,
-          right: 12,
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          fontSize: '20px',
-          lineHeight: 1,
-          padding: '2px 4px',
-          borderRadius: 6,
-          transition: 'transform 0.15s',
-          zIndex: 2,
-          filter: isFav
-            ? 'none'
-            : 'grayscale(1) opacity(0.45)',
-        }}
-        onMouseEnter={e =>
-          e.currentTarget.style.transform
-            = 'scale(1.25)'
-        }
-        onMouseLeave={e =>
-          e.currentTarget.style.transform
-            = 'scale(1)'
-        }
-      >
-        ⭐
-      </button>
+      
 
       {/* TEAM-COLORED HEADER BAR */}
       <div

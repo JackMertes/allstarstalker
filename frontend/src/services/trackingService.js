@@ -1,6 +1,16 @@
 import apiClient from './api';
 
 const trackingService = {
+  // Get all trackings
+  getTracking: async () => {
+    try {
+      const response = await apiClient.get('/tracking');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   // Get user trackings
   getUserTrackings: async (userId) => {
     try {
@@ -22,10 +32,12 @@ const trackingService = {
   },
 
   // Remove tracking
-  removeTracking: async (trackingId) => {
+  removeTracking: async (callsign) => {
     try {
-      const response = await apiClient.delete(`/tracking/${trackingId}`);
-      return response.data;
+      const response = await apiClient.delete('/tracking', {
+        params: { callsign },
+      });
+      return response;
     } catch (error) {
       throw error;
     }
