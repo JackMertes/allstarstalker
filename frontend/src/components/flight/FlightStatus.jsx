@@ -18,17 +18,6 @@ function FlightStatus({ status }) {
     || normalizedStatus
     || 'Unknown';
 
-  /* Pick icon based on status */
-  const icon = {
-    ACTIVE: '🟢',
-    LANDED: '🛬',
-    SCHEDULED: '📅',
-    DELAYED: '⚠️',
-    CANCELLED: '❌',
-    NOT_FLYING: '📍',
-    UNKNOWN: '❓',
-  }[normalizedStatus] || '❓';
-
   return (
     <span
       className="flight-status-badge"
@@ -48,7 +37,7 @@ function FlightStatus({ status }) {
           `0 2px 6px ${color}40`,
       }}
     >
-      {icon} {label}
+      {label}
     </span>
   );
 }
