@@ -1,21 +1,10 @@
+import { normalizeFlightStatus } from './flightStatus';
+
 /**
  * Maps GET /api/teams rows (teamName, callSign, …) to the shape TeamCard and Search expect.
  */
 function normalizeStatus(status) {
-  const normalized = String(status || 'UNKNOWN').trim().toUpperCase();
-  if (!normalized) {
-    return 'UNKNOWN';
-  }
-
-  if (normalized === 'UNKNOWN') {
-    return 'UNKNOWN';
-  }
-
-  if (normalized === 'NOT_FLYING') {
-    return 'NOT_FLYING';
-  }
-
-  return normalized;
+  return normalizeFlightStatus(status);
 }
 
 export function normalizeTeamFromApi(row) {

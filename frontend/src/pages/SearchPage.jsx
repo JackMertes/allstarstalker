@@ -8,6 +8,7 @@ import { useFavorites } from '../hooks/useFavorites';
 import teamService from '../services/teamService';
 import { mockTeams, searchTeams } from '../utils/mockData';
 import { filterTeamsBySearchTerm } from '../utils/teamApiMapper';
+import { getStatusRank } from '../utils/flightStatus';
 import { TeamCard } from '../components/flight';
 import '../styles/Flight.css';
 
@@ -20,8 +21,6 @@ const SORT_OPTIONS = [
   { value: 'za',     label: 'Z → A'        },
 ];
 
-const STATUS_RANK = { ACTIVE: 0, LANDED: 1, NOT_FLYING: 2, UNKNOWN: 3 };
-
 function teamSortKey(t) {
   return (t && t.team) ? String(t.team) : '';
 }
@@ -30,13 +29,13 @@ function sortTeams(teams, mode) {
   const copy = [...teams];
   if (mode === 'active') {
     return copy.sort((a, b) => {
-      const ra = STATUS_RANK[a.status] ?? 2;
-      const rb = STATUS_RANK[b.status] ?? 2;
+      const ra = getStatusRank(a.status);
+      const rb = getStatusRank(b.status);
       if (ra !== rb) return ra - rb;
       return teamSortKey(a).localeCompare(teamSortKey(b));
     });
   }
-  if (mode === 'recent') return copy.sort((a, b) => (STATUS_RANK[b.status] ?? 2) - (STATUS_RANK[a.status] ?? 2));
+  if (mode === 'recent') return copy.sort((a, b) => getStatusRank(b.status) - getStatusRank(a.status));
   if (mode === 'az')     return copy.sort((a, b) => teamSortKey(a).localeCompare(teamSortKey(b)));
   if (mode === 'za')     return copy.sort((a, b) => teamSortKey(b).localeCompare(teamSortKey(a)));
   return copy;

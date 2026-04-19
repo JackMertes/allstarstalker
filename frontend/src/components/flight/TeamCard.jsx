@@ -7,6 +7,7 @@ import teamService
 import { useFavorites }
   from '../../hooks/useFavorites';
 import { getTeamColor } from '../../constants/teamColors';
+import { isLiveStatus, normalizeFlightStatus } from '../../utils/flightStatus';
 
 // Builds location display string
 function getLocationDisplay(team) {
@@ -25,8 +26,10 @@ function TeamCard({ team }) {
   const { isFavorite, toggle } =
     useFavorites();
 
+  const normalizedStatus =
+    normalizeFlightStatus(team.status);
   const isLive =
-    team.status === 'ACTIVE';
+    isLiveStatus(normalizedStatus);
   const isFav =
     isFavorite(team.callsign);
   // Get team's primary color
@@ -168,7 +171,7 @@ function TeamCard({ team }) {
           </div>
         </div>
         <FlightStatus
-          status={team.status}
+          status={normalizedStatus}
         />
       </div>
 

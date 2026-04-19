@@ -127,4 +127,29 @@ describe('SearchPage', () => {
     await screen.findByText('Brooklyn Nets');
     expect(teamService.getAllTeams).toHaveBeenCalledTimes(1);
   });
+
+  it('sorts supported statuses consistently in active-first mode', async () => {
+    teamService.getAllTeams.mockResolvedValue([
+      { callsign: 'UNK001', team: 'Zulu Unknown', category: 'NBA', status: 'UNKNOWN' },
+      { callsign: 'SCH001', team: 'Gamma Scheduled', category: 'NBA', status: 'SCHEDULED' },
+      { callsign: 'ACT001', team: 'Alpha Active', category: 'NBA', status: 'ACTIVE' },
+      { callsign: 'DEL001', team: 'Delta Delayed', category: 'NBA', status: 'DELAYED' },
+      { callsign: 'DIV001', team: 'Beta Diverted', category: 'NBA', status: 'DIVERTED' },
+    ]);
+
+    const { container } = renderSearchPage();
+
+    expect(await screen.findByText('Alpha Active')).toBeInTheDocument();
+
+    const names = Array.from(container.querySelectorAll('.card-team-name'))
+      .map((node) => node.textContent);
+
+    expect(names).toEqual([
+      'Alpha Active',
+      'Beta Diverted',
+      'Delta Delayed',
+      'Gamma Scheduled',
+      'Zulu Unknown',
+    ]);
+  });
 });
