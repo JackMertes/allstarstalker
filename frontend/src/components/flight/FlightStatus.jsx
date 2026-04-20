@@ -3,9 +3,10 @@ import '../../styles/Common.css';
 import {
   STATUS_COLORS, STATUS_LABELS
 } from '../../utils/constants';
+import { normalizeFlightStatus } from '../../utils/flightStatus';
 
 function FlightStatus({ status }) {
-  const normalizedStatus = String(status || 'UNKNOWN').trim().toUpperCase();
+  const normalizedStatus = normalizeFlightStatus(status);
 
   /* Get color or default gray */
   const color =
@@ -17,6 +18,18 @@ function FlightStatus({ status }) {
     STATUS_LABELS[normalizedStatus]
     || normalizedStatus
     || 'Unknown';
+
+  /* Pick icon based on status */
+  const icon = {
+    ACTIVE: '🟢',
+    DIVERTED: '↪️',
+    LANDED: '🛬',
+    SCHEDULED: '📅',
+    DELAYED: '⚠️',
+    CANCELLED: '❌',
+    NOT_FLYING: '📍',
+    UNKNOWN: '❓',
+  }[normalizedStatus] || '❓';
 
   return (
     <span
@@ -37,7 +50,7 @@ function FlightStatus({ status }) {
           `0 2px 6px ${color}40`,
       }}
     >
-      {label}
+      {icon} {label}
     </span>
   );
 }

@@ -5,7 +5,10 @@ import FlightStatus from './FlightStatus';
 import teamService
   from '../../services/teamService';
 import trackingService from '../../services/trackingService';
+import { useFavorites }
+  from '../../hooks/useFavorites';
 import { getTeamColor } from '../../constants/teamColors';
+import { isLiveStatus, normalizeFlightStatus } from '../../utils/flightStatus';
 
 // Builds location display string
 function getLocationDisplay(team) {
@@ -21,9 +24,15 @@ function TeamCard({ team }) {
   const navigate = useNavigate();
   const [loading, setLoading] =
     useState(false);
+  const { isFavorite, toggle } =
+    useFavorites();
 
+  const normalizedStatus =
+    normalizeFlightStatus(team.status);
   const isLive =
-    team.status === 'ACTIVE';
+    isLiveStatus(normalizedStatus);
+  const isFav =
+    isFavorite(team.callsign);
   // Get team's primary color
   const headerColor =
     getTeamColor(team.team);
@@ -107,7 +116,43 @@ function TeamCard({ team }) {
         }
       />
 
-      
+      <button
+        onClick={() =>
+          toggle(team.callsign)
+        }
+        aria-label={
+          isFav
+            ? 'Remove from favorites'
+            : 'Add to favorites'
+        }
+        style={{
+          position: 'absolute',
+          top: 10,
+          right: 12,
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          fontSize: '20px',
+          lineHeight: 1,
+          padding: '2px 4px',
+          borderRadius: 6,
+          transition: 'transform 0.15s',
+          zIndex: 2,
+          filter: isFav
+            ? 'none'
+            : 'grayscale(1) opacity(0.45)',
+        }}
+        onMouseEnter={e =>
+          e.currentTarget.style.transform
+            = 'scale(1.25)'
+        }
+        onMouseLeave={e =>
+          e.currentTarget.style.transform
+            = 'scale(1)'
+        }
+      >
+        ⭐
+      </button>
 
       {/* TEAM-COLORED HEADER BAR */}
       <div
@@ -153,7 +198,7 @@ function TeamCard({ team }) {
           </div>
         </div>
         <FlightStatus
-          status={team.status}
+          status={normalizedStatus}
         />
       </div>
 

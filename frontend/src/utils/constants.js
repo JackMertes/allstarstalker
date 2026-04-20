@@ -2,6 +2,7 @@
 export const FLIGHT_STATUS = {
   SCHEDULED: 'SCHEDULED',
   ACTIVE: 'ACTIVE',
+  DIVERTED: 'DIVERTED',
   LANDED: 'LANDED',
   CANCELLED: 'CANCELLED',
   DELAYED: 'DELAYED',
@@ -13,6 +14,7 @@ export const FLIGHT_STATUS = {
 export const STATUS_COLORS = {
   SCHEDULED: '#3498db',
   ACTIVE: '#2ecc71',
+  DIVERTED: '#f97316',
   LANDED: '#95a5a6',
   CANCELLED: '#e74c3c',
   DELAYED: '#f39c12',
@@ -24,6 +26,7 @@ export const STATUS_COLORS = {
 export const STATUS_LABELS = {
   SCHEDULED: 'Scheduled',
   ACTIVE: 'Flying',
+  DIVERTED: 'Diverted',
   LANDED: 'Landed',
   CANCELLED: 'Cancelled',
   DELAYED: 'Delayed',
