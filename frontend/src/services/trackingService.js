@@ -2,7 +2,7 @@ import apiClient from './api';
 
 const trackingService = {
   // Get all trackings
-  getTracking: async () => {
+  getTrackings: async () => {
     try {
       const response = await apiClient.get('/tracking');
       return response.data;
@@ -52,5 +52,7 @@ const trackingService = {
     }
   }
 };
+
+trackingService.getTracking = trackingService.getTrackings;
 
 export default trackingService;

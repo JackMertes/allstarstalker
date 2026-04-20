@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import teamService from '../services/teamService';
 import trackingService from '../services/trackingService';
+import useTracking from '../hooks/useTracking';
 
 // ── Status badge ─────────────────────────────────────────────────────────────
 function StatusBadge({ enabled }) {
@@ -162,22 +163,7 @@ const AT = {
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 function TrackingPage() {
-  const [trackings, setTrackings] = useState([]);
-  const [loading, setLoading]     = useState(true);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await trackingService.getTrackings();
-        setTrackings(Array.isArray(data) ? data : []);
-      } catch {
-        setTrackings([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
+  const { trackings, setTrackings, loading, error } = useTracking();
 
   const handleAdd = async (value) => {
     try {
@@ -203,15 +189,13 @@ function TrackingPage() {
         try {
           const trackingData = {
             team: match.team,
-            userId:1,
             callsign: match.callsign,
+            category: match.category,
             notificationEnabled: true,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
-          console.log(trackingData);
           const apiResult = await trackingService.addTracking(trackingData);
-          console.log(apiResult);
           setTrackings(prev => [
             ...prev,
             apiResult,
@@ -234,14 +218,10 @@ function TrackingPage() {
     }
 
     try {
-      console.log("Attempting to remove tracking for callsign:", callsign);
-      const response = await trackingService.removeTracking(callsign);
-      console.log("remove response:", response);
-      if (response?.status === 204) {
-        setTrackings(prev => prev.filter(t =>
-          String(t.callsign || '').toLowerCase() !== String(callsign).toLowerCase()
-        ));
-      }
+      await trackingService.removeTracking(callsign);
+      setTrackings(prev => prev.filter(t =>
+        String(t.callsign || '').toLowerCase() !== String(callsign).toLowerCase()
+      ));
     } catch {
       // Keep UI unchanged when remove request fails.
     }
@@ -279,6 +259,12 @@ function TrackingPage() {
         <h2 style={{ marginTop: 0, marginBottom: 16, fontSize: 18, fontWeight: 700 }}>
           Your Tracked Items ({loading ? '…' : trackings.length})
         </h2>
+
+        {error && (
+          <div style={{ marginBottom: 16, color: '#b91c1c', fontSize: 14 }}>
+            Could not load tracking data.
+          </div>
+        )}
 
         {loading ? (
           <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--runway-gray)' }}>

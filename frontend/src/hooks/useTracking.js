@@ -7,15 +7,16 @@ const useTracking = (userId) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!userId) return;
-
     const fetchTrackings = async () => {
       try {
         setLoading(true);
-        const data = await trackingService.getUserTrackings(userId);
-        setTrackings(data);
+        const data = userId
+          ? await trackingService.getUserTrackings(userId)
+          : await trackingService.getTrackings();
+        setTrackings(Array.isArray(data) ? data : []);
         setError(null);
       } catch (err) {
+        setTrackings([]);
         setError(err.message || 'Failed to fetch trackings');
       } finally {
         setLoading(false);
@@ -25,7 +26,7 @@ const useTracking = (userId) => {
     fetchTrackings();
   }, [userId]);
 
-  return { trackings, loading, error };
+  return { trackings, setTrackings, loading, error };
 };
 
 export default useTracking;
