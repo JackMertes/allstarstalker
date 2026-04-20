@@ -11,42 +11,55 @@ import {
 import { getTeamColor } from '../../constants/teamColors';
 import '../../styles/Flight.css';
 
-/* Airplane icon with rotation */
-const airplaneIcon = (track, markerSize = 36) =>
+/* Airplane icon with rotation, team color, and live/grounded status dot */
+const airplaneIcon = (track, markerSize = 36, color = '#1a73e8', isLive = false) =>
   new L.DivIcon({
     html: `<div style="
       position: relative;
-      width: ${markerSize}px;
-      height: ${markerSize}px;
-      transform: rotate(${track || 0}deg);
-      transition: transform 0.8s ease;
+      width: ${markerSize + 8}px;
+      height: ${markerSize + 8}px;
       display: flex;
       justify-content: center;
       align-items: center;">
       <div style="
-        position:absolute;
-        width:${Math.round(markerSize * 0.55)}px;
-        height:${Math.round(markerSize * 0.55)}px;
-        border-radius:999px;
-        background:rgba(26,115,232,0.22);
-        box-shadow:0 0 12px rgba(26,115,232,0.45);">
+        transform: rotate(${track || 0}deg);
+        transition: transform 0.8s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;">
+        <div style="
+          position:absolute;
+          width:${Math.round(markerSize * 0.55)}px;
+          height:${Math.round(markerSize * 0.55)}px;
+          border-radius:999px;
+          background:${color}38;
+          box-shadow:0 0 12px ${color}73;">
+        </div>
+        <svg width="${markerSize}" height="${markerSize}"
+          viewBox="0 0 24 24"
+          fill="${color}"
+          xmlns="http://www.w3.org/2000/svg"
+          style="filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3));">
+          <path d="M21 16v-2l-8-5V3.5
+            c0-.83-.67-1.5-1.5-1.5S10
+            2.67 10 3.5V9l-8 5v2l8-2.5
+            V19l-2 1.5V22l3.5-1 3.5
+            1v-1.5L13 19v-5.5l8
+            2.5z"/>
+        </svg>
       </div>
-      <svg width="${markerSize}" height="${markerSize}"
-        viewBox="0 0 24 24"
-        fill="#1a73e8"
-        xmlns="http://www.w3.org/2000/svg"
-        style="filter: drop-shadow(
-        0px 2px 2px rgba(0,0,0,0.3));">
-        <path d="M21 16v-2l-8-5V3.5
-          c0-.83-.67-1.5-1.5-1.5S10
-          2.67 10 3.5V9l-8 5v2l8-2.5
-          V19l-2 1.5V22l3.5-1 3.5
-          1v-1.5L13 19v-5.5l8
-          2.5z"/>
-      </svg></div>`,
+      <div style="
+        position: absolute; top: 2px; right: 2px;
+        width: 9px; height: 9px; border-radius: 50%;
+        background: ${isLive ? '#22c55e' : '#94a3b8'};
+        border: 1.5px solid white;
+        box-shadow: ${isLive ? '0 0 6px 2px #22c55e' : 'none'};">
+      </div>
+    </div>`,
     className: 'custom-airplane-icon',
-    iconSize: [markerSize, markerSize],
-    iconAnchor: [Math.round(markerSize / 2), Math.round(markerSize / 2)],
+    iconSize: [markerSize + 8, markerSize + 8],
+    iconAnchor: [Math.round((markerSize + 8) / 2), Math.round((markerSize + 8) / 2)],
   });
 
 const getValue = (value) => (
@@ -153,9 +166,10 @@ function FlightDetails({ flightData }) {
   const mapBadgeText = isFlying ? 'Live position' : 'Last known position';
   const freshnessText = getFreshnessText(flightData?.last_seen);
   const markerSize = mapZoom >= 9 ? 46 : mapZoom >= 7 ? 42 : 38;
+  // pass team color and live status so the icon matches the team and shows the right dot
   const markerIcon = useMemo(
-    () => airplaneIcon(ac.track, markerSize),
-    [ac.track, markerSize]
+    () => airplaneIcon(ac.track, markerSize, color, isFlying),
+    [ac.track, markerSize, color, isFlying]
   );
 
   useEffect(() => {
