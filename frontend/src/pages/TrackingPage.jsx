@@ -189,15 +189,13 @@ function TrackingPage() {
         try {
           const trackingData = {
             team: match.team,
-            userId:1,
             callsign: match.callsign,
+            category: match.category,
             notificationEnabled: true,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
-          console.log(trackingData);
           const apiResult = await trackingService.addTracking(trackingData);
-          console.log(apiResult);
           setTrackings(prev => [
             ...prev,
             apiResult,
@@ -220,14 +218,10 @@ function TrackingPage() {
     }
 
     try {
-      console.log("Attempting to remove tracking for callsign:", callsign);
-      const response = await trackingService.removeTracking(callsign);
-      console.log("remove response:", response);
-      if (response?.status === 204) {
-        setTrackings(prev => prev.filter(t =>
-          String(t.callsign || '').toLowerCase() !== String(callsign).toLowerCase()
-        ));
-      }
+      await trackingService.removeTracking(callsign);
+      setTrackings(prev => prev.filter(t =>
+        String(t.callsign || '').toLowerCase() !== String(callsign).toLowerCase()
+      ));
     } catch {
       // Keep UI unchanged when remove request fails.
     }
