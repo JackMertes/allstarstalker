@@ -21,8 +21,7 @@ function StatusBadge({ enabled }) {
 // ── Single tracked item row ──────────────────────────────────────────────────
 function TrackedRow({ tracking, onRemove, onToggle }) {
   const label =
-    tracking.type === 'team'     ? tracking.team :
-    tracking.type === 'aircraft' ? `${tracking.tailNumber} — ${tracking.aircraftType}` :
+    tracking.team                ? tracking.team :
     tracking.entityName          ? `${tracking.entityName} (${tracking.entityType})` :
     tracking.flightNumber        ? `Flight ${tracking.flightNumber}` :
     'Unknown';
@@ -35,7 +34,7 @@ function TrackedRow({ tracking, onRemove, onToggle }) {
     <div style={RS.row}>
       {/* Left icon */}
       <div style={RS.iconWrap}>
-        {tracking.type === 'team' ? '🏀' : tracking.type === 'aircraft' ? '✈️' : '📋'}
+        {'🏀'}
       </div>
 
       {/* Info */}
@@ -61,7 +60,7 @@ function TrackedRow({ tracking, onRemove, onToggle }) {
       <StatusBadge enabled={tracking.notificationEnabled} />
 
       {/* Remove */}
-      <button onClick={() => onRemove(tracking.trackingId)} style={RS.removeBtn}>
+      <button onClick={() => onRemove(tracking.callsign)} style={RS.removeBtn}>
         Remove
       </button>
     </div>
@@ -177,7 +176,7 @@ function TrackingPage() {
       if (match) {
         // Prevent duplicate team tracking
         const alreadyTracked = trackings.some(
-          t => t.type === 'team' && (
+          t => (
             (t.team && t.team.toLowerCase() === match.team.toLowerCase()) ||
             (t.callsign && t.callsign.toLowerCase() === match.callsign.toLowerCase())
           )
@@ -189,14 +188,16 @@ function TrackingPage() {
         // Actually add tracking via API
         try {
           const trackingData = {
-            type: 'team',
             team: match.team,
+            userId:1,
             callsign: match.callsign,
-            category: match.category,
             notificationEnabled: true,
             createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           };
+          console.log(trackingData);
           const apiResult = await trackingService.addTracking(trackingData);
+          console.log(apiResult);
           setTrackings(prev => [
             ...prev,
             apiResult,
@@ -212,12 +213,23 @@ function TrackingPage() {
     }
   };
 
-  const handleRemove = async (id) => {
+  const handleRemove = async (callsign) => {
+    if (!callsign) {
+      alert('Unable to remove tracking: callsign is missing.');
+      return;
+    }
+
     try {
-      await trackingService.removeTracking(id);
-      setTrackings(prev => prev.filter(t => String(t.trackingId) !== String(id)));
+      console.log("Attempting to remove tracking for callsign:", callsign);
+      const response = await trackingService.removeTracking(callsign);
+      console.log("remove response:", response);
+      if (response?.status === 204) {
+        setTrackings(prev => prev.filter(t =>
+          String(t.callsign || '').toLowerCase() !== String(callsign).toLowerCase()
+        ));
+      }
     } catch {
-      alert('Failed to remove tracking.');
+      // Keep UI unchanged when remove request fails.
     }
   };
 
