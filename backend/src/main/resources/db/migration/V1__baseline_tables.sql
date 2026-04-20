@@ -34,19 +34,6 @@ CREATE TABLE airports (
   UNIQUE KEY uq_airport_iata (iata_code)
 ) ENGINE=InnoDB;
 
-CREATE TABLE tracked_items (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, -- unique tracked item ID
-  user_id BIGINT UNSIGNED, -- dummy column for future user support
-  team VARCHAR(80),
-  callsign VARCHAR(16),
-  notification_enabled BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
-
-
-
-
 -- Flights (charter/scheduled). Links departure/arrival airports; status and times.
 CREATE TABLE flights (
   id                      BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

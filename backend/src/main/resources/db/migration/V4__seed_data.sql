@@ -28,11 +28,3 @@ INSERT INTO team_flights (team_id, flight_id, role, confidence)
 SELECT t.id, f.id, 'TEAM_CHARTER', 95
 FROM teams t JOIN flights f
 WHERE t.abbreviation='MIL' AND f.external_flight_id='demo1';
-
-
-INSERT INTO tracked_items (user_id, team, callsign, notification_enabled)
-VALUES
-  (1, 'Milwaukee Bucks', 'DAL8932', TRUE),
-  (1, 'Boston Celtics', 'DAL8919', TRUE),
-  (2, 'Los Angeles Lakers', 'DAL8929', FALSE),
-  (2, 'Golden State Warriors', 'DAL8926', TRUE);
