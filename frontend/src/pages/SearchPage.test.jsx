@@ -109,7 +109,6 @@ describe('SearchPage', () => {
 
     expect(await screen.findByText('Dallas Cowboys')).toBeInTheDocument();
     expect(screen.queryByText('Denver Nuggets')).not.toBeInTheDocument();
-    // Search filters the cached list; no second fetch
     expect(teamService.getAllTeams).toHaveBeenCalledTimes(1);
   });
 
@@ -151,5 +150,29 @@ describe('SearchPage', () => {
       'Gamma Scheduled',
       'Zulu Unknown',
     ]);
+  });
+
+  it('applies first search submitted before initial load finishes', async () => {
+    const user = userEvent.setup();
+    let resolveTeams;
+
+    teamService.getAllTeams.mockReturnValue(
+      new Promise((resolve) => {
+        resolveTeams = resolve;
+      })
+    );
+
+    renderSearchPage();
+
+    const input = screen.getByPlaceholderText(/search by team name/i);
+    await user.type(input, 'Cowboys');
+    await user.click(screen.getByRole('button', { name: /^search$/i }));
+
+    resolveTeams(mockTeams);
+
+    expect(await screen.findByText('Dallas Cowboys')).toBeInTheDocument();
+    expect(screen.queryByText('Denver Nuggets')).not.toBeInTheDocument();
+    expect(screen.queryByText('Brooklyn Nets')).not.toBeInTheDocument();
+    expect(teamService.getAllTeams).toHaveBeenCalledTimes(1);
   });
 });

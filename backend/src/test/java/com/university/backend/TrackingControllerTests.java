@@ -2,124 +2,129 @@ package com.university.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.client.RestTestClient;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
+@AutoConfigureRestTestClient
 @ActiveProfiles("test")
 class TrackingControllerTests {
+
+    @Autowired
+    private RestTestClient testClient;
 
     @Autowired
     private TrackingController controller;
 
     @MockitoBean
-    private MockDataService mock;
+    private TrackingRepository trackingRepo;
 
     @Test
     void contextLoads() {
         assertThat(controller).isNotNull();
+        assertThat(testClient).isNotNull();
     }
 
     @Test
-    void getAllTracking_returnsMockResults() {
-        when(mock.getUserTrackings()).thenReturn(List.of(Map.of(
-                "trackingId", "1",
-                "callsign", "DAL8924",
-                "notificationEnabled", true
-        )));
+    void getAllTracking_returnsMappedResults() {
+        TrackingItem item = new TrackingItem();
+        item.setId(1L);
+        item.setUserId(7L);
+        item.setTeam("Chicago Bulls");
+        item.setCallsign("DAL8922");
+        item.setNotificationEnabled(true);
 
-        ResponseEntity<List<Map<String, Object>>> response = controller.getAllTracking();
+        when(trackingRepo.findAll()).thenReturn(List.of(item));
+
+        ResponseEntity<?> response = controller.getAllTracking();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).hasSize(1);
-        assertThat(response.getBody().get(0)).containsEntry("callsign", "DAL8924");
+        assertThat(response.getBody()).isInstanceOf(List.class);
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> body = (List<Map<String, Object>>) response.getBody();
+        assertThat(body).hasSize(1);
+        assertThat(body.get(0))
+                .containsEntry("trackingId", 1L)
+                .containsEntry("userId", 7L)
+                .containsEntry("team", "Chicago Bulls")
+                .containsEntry("callsign", "DAL8922")
+                .containsEntry("notificationEnabled", true);
     }
 
     @Test
-    void addTracking_returnsCreatedTracking() {
-        Map<String, Object> createdTracking = Map.of(
-                "trackingId", "10",
-                "type", "team",
-                "team", "Denver Nuggets",
-                "callsign", "DAL8924",
+    void addTracking_returnsBadRequest_whenTeamMissing() {
+        ResponseEntity<?> response = controller.addTracking(Map.of(
+                "callsign", "TEST123",
                 "notificationEnabled", true
-        );
-        when(mock.addUserTracking(anyMap())).thenReturn(createdTracking);
-
-        ResponseEntity<Map<String, Object>> response = controller.addTracking(Map.of(
-                "type", "team",
-                "team", "Denver Nuggets",
-                "callsign", "DAL8924"
         ));
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).containsEntry("trackingId", "10")
-                .containsEntry("callsign", "DAL8924");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isEqualTo(Map.of("error", "team is required"));
     }
 
     @Test
-    void updateTracking_returnsBadRequest_whenNotificationEnabledIsMissing() {
-        ResponseEntity<Map<String, Object>> response = controller.updateTracking("10", Map.of());
+    void addTracking_savesAndReturnsMappedResults() {
+        TrackingItem savedItem = new TrackingItem();
+        savedItem.setId(42L);
+        savedItem.setTeam("Chicago Bulls");
+        savedItem.setCallsign("DAL8922");
+        savedItem.setNotificationEnabled(true);
+
+        when(trackingRepo.save(any(TrackingItem.class))).thenReturn(savedItem);
+        when(trackingRepo.findAll()).thenReturn(List.of(savedItem));
+
+        Map<String, Object> payload = Map.of(
+                "team", "Chicago Bulls",
+                "callsign", "DAL8922",
+                "notificationEnabled", true
+        );
+
+        ResponseEntity<?> response = controller.addTracking(payload);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isInstanceOf(List.class);
+        List<?> body = (List<?>) response.getBody();
+        assertThat(body).hasSize(1);
+        assertThat(body.get(0)).isInstanceOf(Map.class);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> item = (Map<String, Object>) body.get(0);
+        assertThat(item)
+                .containsEntry("trackingId", 42L)
+                .containsEntry("team", "Chicago Bulls")
+                .containsEntry("callsign", "DAL8922")
+                .containsEntry("notificationEnabled", true)
+                .containsEntry("userId", null)
+                .containsEntry("createdAt", null)
+                .containsEntry("updatedAt", null);
+    }
+
+    @Test
+    void removeTracking_returnsBadRequest_whenCallsignMissing() {
+        ResponseEntity<String> response = controller.removeTracking("  ");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isEqualTo("delete failed: callsign is required");
     }
 
     @Test
-    void updateTracking_returnsNotFound_whenTrackingDoesNotExist() {
-        when(mock.updateTrackingNotification("99", false)).thenReturn(Optional.empty());
+    void removeTracking_returnsNoContent_whenDeleted() {
+        when(trackingRepo.deleteByCallsignIgnoreCase("TEST123")).thenReturn(1L);
 
-        ResponseEntity<Map<String, Object>> response = controller.updateTracking(
-                "99",
-                Map.of("notificationEnabled", false)
-        );
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    void updateTracking_returnsUpdatedTracking_whenTrackingExists() {
-        Map<String, Object> updatedTracking = Map.of(
-                "trackingId", "10",
-                "callsign", "DAL8924",
-                "notificationEnabled", false
-        );
-        when(mock.updateTrackingNotification("10", false)).thenReturn(Optional.of(updatedTracking));
-
-        ResponseEntity<Map<String, Object>> response = controller.updateTracking(
-                "10",
-                Map.of("notificationEnabled", false)
-        );
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).containsEntry("notificationEnabled", false);
-    }
-
-    @Test
-    void removeTracking_returnsNotFound_whenTrackingDoesNotExist() {
-        when(mock.removeUserTracking("99")).thenReturn(false);
-
-        ResponseEntity<Void> response = controller.removeTracking("99");
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    void removeTracking_returnsNoContent_whenTrackingExists() {
-        when(mock.removeUserTracking("10")).thenReturn(true);
-
-        ResponseEntity<Void> response = controller.removeTracking("10");
+        ResponseEntity<String> response = controller.removeTracking("TEST123");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(response.getBody()).isEqualTo("deleted successfully the TEST123");
     }
 }
