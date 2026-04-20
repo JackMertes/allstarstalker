@@ -44,6 +44,28 @@ test_backend:
     - cd backend
     - ./gradlew --no-daemon test
 
+test_flyway_mysql:
+  stage: test
+  image: gradle:8-jdk21
+  services:
+    - name: mysql:8.0
+      alias: mysql
+  variables:
+    DB_HOST: mysql
+    DB_PORT: "3306"
+    DB_NAME: nba_flight_tracker
+    DB_USER: flight_user
+    DB_PASSWORD: ci_password
+    MYSQL_DATABASE: nba_flight_tracker
+    MYSQL_USER: flight_user
+    MYSQL_PASSWORD: ci_password
+    MYSQL_ROOT_PASSWORD: ci_root_password
+  script:
+    - apt-get update && apt-get install -y default-mysql-client
+    - until mysqladmin ping -h "$DB_HOST" -uroot -p"$MYSQL_ROOT_PASSWORD" --silent; do sleep 2; done
+    - cd backend
+    - ./gradlew --no-daemon mysqlIntegrationTest
+
 test_frontend:
   stage: test
   image: node:20
@@ -70,6 +92,7 @@ build_backend:
     expire_in: 1 week
   needs:
     - test_backend
+    - test_flyway_mysql
 
 build_frontend:
   stage: build
