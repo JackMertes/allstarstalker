@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -27,7 +28,11 @@ import java.util.List;
 public class FlightController {
 
     /** Used to query about flights */
-    private FlightRepository repo;
+    private final FlightRepository repo;
+
+    public FlightController(FlightRepository repo) {
+        this.repo = repo;
+    }
 
     /**
      * Handles GET requests to "/api/flights" and provides a RepsonseEntity 
@@ -39,7 +44,7 @@ public class FlightController {
     public ResponseEntity<List<Map<String, String>>> getAllFlights() {
         // all flights from db
         List<Flight> flights = repo.findAll();
-        if (flights.isEmpty()) {return ResponseEntity.status(500).build();}
+        if (flights.isEmpty()) {return ResponseEntity.ok(new ArrayList<>());}
 
         // one set of mappings per flight (flightDataSet), all flights held in flightMappings
         List<Map<String, String>> flightMappings;
@@ -72,24 +77,26 @@ public class FlightController {
     */
     @GetMapping("/search")
     public ResponseEntity<Map<String, String>> search(@RequestParam(required = false) String searchTerm) {
+        // respond with error (400) if client does not provide search term
+        if (searchTerm == null || searchTerm.isBlank()) {return ResponseEntity.badRequest().build();}
 
         // query database
         Optional<Flight> repoFlights = repo.findByCallsign(searchTerm);
-
-        // respond with error (400) if client does not provide search term
-        if (searchTerm == null) {return ResponseEntity.badRequest().build();}
         
-        // if db does not return anoything, respond with error (500)
-        if (!repoFlights.isPresent()) {return ResponseEntity.status(500).build();}
+        // if db does not return anything, respond with 404
+        if (repoFlights.isEmpty()) {return ResponseEntity.notFound().build();}
         Map<String, String> flightDataSet = new HashMap<>();
 
-        flightDataSet.put("externalFlightId", repoFlights.get().getExternalFlightId());
-        flightDataSet.put("aircraftType", repoFlights.get().getAircraftType());
-        flightDataSet.put("callSign", repoFlights.get().getCallsign());
-        flightDataSet.put("flightNumber", repoFlights.get().getFlightNumber());
-        flightDataSet.put("airlineIata", repoFlights.get().getAirlineIata());
-        flightDataSet.put("departureScheduleUtc()", repoFlights.get().getDepartureScheduledUtc().toString());
-        flightDataSet.put("tailNumber", repoFlights.get().getTailNumber());
+        Flight flight = repoFlights.get();
+        flightDataSet.put("externalFlightId", flight.getExternalFlightId());
+        flightDataSet.put("aircraftType", flight.getAircraftType());
+        flightDataSet.put("callSign", flight.getCallsign());
+        flightDataSet.put("flightNumber", flight.getFlightNumber());
+        flightDataSet.put("airlineIata", flight.getAirlineIata());
+        if (flight.getDepartureScheduledUtc() != null) {
+            flightDataSet.put("departureScheduleUtc", flight.getDepartureScheduledUtc().toString());
+        }
+        flightDataSet.put("tailNumber", flight.getTailNumber());
         
         return ResponseEntity.ok(flightDataSet);
     }
@@ -103,9 +110,13 @@ public class FlightController {
     */
     @GetMapping("/{flightId}")
     public ResponseEntity<Map<String, String>> getByFlightID(@PathVariable long flightId) {
-        Map<String, String> flightData = new HashMap<>();
-        Flight flight = repo.getReferenceById(flightId);
+        Optional<Flight> flightOpt = repo.findById(flightId);
+        if (flightOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
 
+        Map<String, String> flightData = new HashMap<>();
+        Flight flight = flightOpt.get();
         flightData.put("id", flight.getId().toString());
         //flightData.put("externalFlightId", flight.getExternalFlightId());
         //flightData.put("aircraftType", flight.getAircraftType());
@@ -130,7 +141,12 @@ public class FlightController {
     */
     @GetMapping("/{flightId}/details")
     public ResponseEntity<Map<String, String>> getDetails(@PathVariable long flightId) {
-        Flight flight = repo.getReferenceById(flightId);
+        Optional<Flight> flightOpt = repo.findById(flightId);
+        if (flightOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Flight flight = flightOpt.get();
 
         Map<String, String> flightData = new HashMap<>();
         flightData.put("id", flight.getId().toString());
@@ -139,7 +155,9 @@ public class FlightController {
         flightData.put("callSign", flight.getCallsign());
         flightData.put("flightNumber", flight.getFlightNumber());
         flightData.put("airlineIata", flight.getAirlineIata());
-        flightData.put("departureScheduleUtc", flight.getDepartureScheduledUtc().toString());
+        if (flight.getDepartureScheduledUtc() != null) {
+            flightData.put("departureScheduleUtc", flight.getDepartureScheduledUtc().toString());
+        }
         flightData.put("tailNumber", flight.getTailNumber());
         flightData.put("status", flight.getStatus());
 
@@ -156,26 +174,18 @@ public class FlightController {
     @GetMapping("/active")
     public ResponseEntity<List<Map<String, String>>> getActive() {
 
-        // query the databse, return status code 400 if nothing found
-        List<Flight> flights = repo.findAll();
-        if (flights.isEmpty()) return ResponseEntity.badRequest().build();
+        List<Flight> flights = repo.findByStatus("ACTIVE");
+        if (flights.isEmpty()) return ResponseEntity.ok(new ArrayList<>());
 
-        // one set of mappings per flight (flightDataSet) all to be held in flightMappings
-        List<Map<String, String>> flightDataMappings;
-        Map<String, String> flightData;
-
-        // map data for each flight
-        flightDataMappings = new ArrayList<Map<String, String>>();
-        for (Flight f : flights) {
-            if (f.getStatus().equals("active")) {
-                flightData = new HashMap<String, String>();
-
-                flightData.put("id", f.getId().toString());
-                flightData.put("callSign", f.getCallsign());
-                flightData.put("flightNumber", f.getFlightNumber());
-                flightDataMappings.add(flightData);
-            }
-        }
+        List<Map<String, String>> flightDataMappings = flights.stream()
+                .map(f -> {
+                    Map<String, String> flightData = new HashMap<>();
+                    flightData.put("id", f.getId().toString());
+                    flightData.put("callSign", f.getCallsign());
+                    flightData.put("flightNumber", f.getFlightNumber());
+                    return flightData;
+                })
+                .collect(Collectors.toList());
 
         // encapsulate list of flight mappings into a response body, with code 200
         return ResponseEntity.ok(flightDataMappings);
@@ -191,9 +201,9 @@ public class FlightController {
     @GetMapping("/{flightId}/positions")
     public ResponseEntity<Map<String, Object>> getPositions(@PathVariable long flightId) {
         
-        // query result
-        Flight flight = repo.getReferenceById(flightId);
-        if (flight == null) {return ResponseEntity.status(500).build();}
+        Optional<Flight> flightOpt = repo.findById(flightId);
+        if (flightOpt.isEmpty()) {return ResponseEntity.notFound().build();}
+        Flight flight = flightOpt.get();
 
         // map flight's position-relevant data
         Map<String, Object> flightData = new HashMap<String, Object>();

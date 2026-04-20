@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import teamService from '../services/teamService';
 import trackingService from '../services/trackingService';
-import { mockUserTrackings } from '../utils/mockData';
-import { DEFAULT_API_BASE_URL } from '../utils/constants';
-
-const BASE = process.env.REACT_APP_API_BASE_URL || DEFAULT_API_BASE_URL;
 
 // ── Status badge ─────────────────────────────────────────────────────────────
 function StatusBadge({ enabled }) {
@@ -172,11 +168,10 @@ function TrackingPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res  = await fetch(`${BASE}/tracking`);
-        const data = await res.json();
-        setTrackings(data?.length ? data : mockUserTrackings);
+        const data = await trackingService.getTrackings();
+        setTrackings(Array.isArray(data) ? data : []);
       } catch {
-        setTrackings(mockUserTrackings);
+        setTrackings([]);
       } finally {
         setLoading(false);
       }
@@ -219,10 +214,7 @@ function TrackingPage() {
           console.log(apiResult);
           setTrackings(prev => [
             ...prev,
-            {
-              ...trackingData,
-              trackingId: apiResult.trackingId || Date.now(),
-            },
+            apiResult,
           ]);
         } catch (err) {
           alert('Failed to add tracking to server.');
@@ -255,10 +247,23 @@ function TrackingPage() {
     }
   };
 
-  const handleToggle = (id) =>
-    setTrackings(prev => prev.map(t =>
-      t.trackingId === id ? { ...t, notificationEnabled: !t.notificationEnabled } : t
-    ));
+  const handleToggle = async (id) => {
+    const current = trackings.find(t => String(t.trackingId) === String(id));
+    if (!current) {
+      return;
+    }
+
+    try {
+      const updated = await trackingService.updateTracking(id, {
+        notificationEnabled: !current.notificationEnabled,
+      });
+      setTrackings(prev => prev.map(t =>
+        String(t.trackingId) === String(id) ? updated : t
+      ));
+    } catch {
+      alert('Failed to update notification settings.');
+    }
+  };
 
   return (
     <div className="tracking-page">

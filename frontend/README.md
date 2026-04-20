@@ -73,7 +73,7 @@ src/
 
 | Variable | Default | Description |
 |---|---|---|
-| `REACT_APP_API_URL` | `http://localhost:8080/api` | Backend API base URL |
+| `REACT_APP_API_BASE_URL` | `http://localhost:8080/api` | Backend API base URL |
 
 ---
 

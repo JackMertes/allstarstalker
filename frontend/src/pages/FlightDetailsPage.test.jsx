@@ -39,14 +39,14 @@ const flyingData = {
   },
 };
 
-/** Renders FlightDetailsPage inside a router with the /flight/:flightId route */
+/** Renders FlightDetailsPage inside a router with the /flight/:callsign route */
 function renderPage(callsign = 'DAL8924', locationState = undefined) {
   return render(
     <MemoryRouter
       initialEntries={[{ pathname: `/flight/${callsign}`, state: locationState }]}
     >
       <Routes>
-        <Route path="/flight/:flightId" element={<FlightDetailsPage />} />
+        <Route path="/flight/:callsign" element={<FlightDetailsPage />} />
         {/* Stub for /search so back-navigation tests don't 404 */}
         <Route path="/search" element={<div>Search Page</div>} />
       </Routes>
@@ -63,7 +63,7 @@ describe('FlightDetailsPage', () => {
     renderPage('DAL8924', { flightData: flyingData });
 
     expect(screen.getByText('Denver Nuggets')).toBeInTheDocument();
-    expect(screen.getByText('🟢 LIVE — IN FLIGHT')).toBeInTheDocument();
+    expect(screen.getByText('FLYING')).toBeInTheDocument();
   });
 
   it('shows a back button when flight data is available', () => {
@@ -86,7 +86,7 @@ describe('FlightDetailsPage', () => {
     renderPage('DAL8924');
 
     expect(await screen.findByText('Denver Nuggets')).toBeInTheDocument();
-    expect(screen.getByText('🟢 LIVE — IN FLIGHT')).toBeInTheDocument();
+    expect(screen.getByText('FLYING')).toBeInTheDocument();
   });
 
   it('shows a friendly no-data message when the fetched team is not currently flying', async () => {

@@ -41,6 +41,15 @@ const trackingService = {
     } catch (error) {
       throw error;
     }
+  },
+
+  updateTracking: async (trackingId, updates) => {
+    try {
+      const response = await apiClient.patch(`/tracking/${trackingId}`, updates);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 };
 

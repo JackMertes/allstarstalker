@@ -185,7 +185,7 @@
 [data-theme="dark"] input::placeholder { color: #6e7681; }
 
 /* ── Generic white panels that use inline styles ───────────────────────────── */
-/* Targets the tracking-list white card bg written inline in TrackingList.jsx */
+/* Targets the tracking page white card background written inline in TrackingPage.jsx */
 [data-theme="dark"] [style*="background: white"],
 [data-theme="dark"] [style*="background-color: white"],
 [data-theme="dark"] [style*="background:#fff"],

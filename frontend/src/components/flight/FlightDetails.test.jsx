@@ -34,18 +34,17 @@ const baseFlight = {
 describe('FlightDetails', () => {
   it('shows fallback when no flightData prop is given', () => {
     render(<FlightDetails />);
-    expect(screen.getByText('No Flight Data Available')).toBeInTheDocument();
-
+    expect(screen.getByText(/no flight information available yet/i)).toBeInTheDocument();
   });
 
   it('shows fallback when raw is null', () => {
     render(<FlightDetails flightData={{ ...baseFlight, raw: null }} />);
-    expect(screen.getByText('No Flight Data Available')).toBeInTheDocument();
+    expect(screen.getByText(/no flight information available yet/i)).toBeInTheDocument();
   });
 
   it('shows fallback when raw.ac is an empty array', () => {
     render(<FlightDetails flightData={{ ...baseFlight, raw: { ac: [] } }} />);
-    expect(screen.getByText('No Flight Data Available')).toBeInTheDocument();
+    expect(screen.getByText(/no flight information available yet/i)).toBeInTheDocument();
   });
 
   it('renders the team name', () => {
@@ -55,7 +54,7 @@ describe('FlightDetails', () => {
 
   it('renders the live in-flight status badge', () => {
     render(<FlightDetails flightData={baseFlight} />);
-    expect(screen.getByText('🟢 LIVE — IN FLIGHT')).toBeInTheDocument();
+    expect(screen.getByText('FLYING')).toBeInTheDocument();
   });
 
   it('renders the flight number in flight information', () => {

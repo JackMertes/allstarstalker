@@ -1,6 +1,23 @@
 /**
  * Maps GET /api/teams rows (teamName, callSign, …) to the shape TeamCard and Search expect.
  */
+function normalizeStatus(status) {
+  const normalized = String(status || 'UNKNOWN').trim().toUpperCase();
+  if (!normalized) {
+    return 'UNKNOWN';
+  }
+
+  if (normalized === 'UNKNOWN') {
+    return 'UNKNOWN';
+  }
+
+  if (normalized === 'NOT_FLYING') {
+    return 'NOT_FLYING';
+  }
+
+  return normalized;
+}
+
 export function normalizeTeamFromApi(row) {
   if (!row || typeof row !== 'object') return null;
 
@@ -18,7 +35,7 @@ export function normalizeTeamFromApi(row) {
     division: row.division ?? '',
     city: row.city ?? '',
     category: row.category ?? 'NBA',
-    status: row.status ?? 'UNKNOWN',
+    status: normalizeStatus(row.status),
     origin: row.origin,
     destination: row.destination,
     aircraft: row.aircraft ?? row.aircraftType,

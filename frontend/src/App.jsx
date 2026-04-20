@@ -29,7 +29,7 @@ function App() {
             <Routes>
               <Route path="/"           element={<HomePage />} />
               <Route path="/search"     element={<SearchPage />} />
-              <Route path="/flight/:flightId" element={<FlightDetailsPage />} />
+              <Route path="/flight/:callsign" element={<FlightDetailsPage />} />
               <Route path="/tracking"   element={<TrackingPage />} />
               <Route path="*"           element={<NotFoundPage />} />
             </Routes>

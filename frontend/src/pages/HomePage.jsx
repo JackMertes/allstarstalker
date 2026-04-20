@@ -5,6 +5,7 @@ import { TeamGridSkeleton } from '../components/common/TeamCardSkeleton';
 import { TeamCard } from '../components/flight';
 import { mockTeams } from '../utils/mockData';
 import { normalizeTeamsFromApi } from '../utils/teamApiMapper';
+import { useDarkMode } from '../hooks/useDarkMode';
 import AllTeamsMap from '../components/flight/AllTeamsMap'; // all-28-teams map
 
 const USE_MOCK = false;
@@ -76,19 +77,6 @@ function LiveDot({ green }) {
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-
-function useDarkMode() {
-  const [isDark, setIsDark] = useState(() =>
-    window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-  );
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = (e) => setIsDark(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-  return isDark;
-}
 
 function HomePage() {
   const [flyingTeams,   setFlyingTeams]   = useState([]);
