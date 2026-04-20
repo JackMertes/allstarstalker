@@ -32,8 +32,24 @@ dependencies {
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+	useJUnitPlatform {
+		excludeTags 'mysql'
+	}
 	testLogging {
 		events 'passed', 'skipped', 'failed'
 	}
+}
+
+tasks.register('mysqlIntegrationTest', Test) {
+	group = 'verification'
+	description = 'Runs Flyway integration checks against a real MySQL database.'
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+	useJUnitPlatform {
+		includeTags 'mysql'
+	}
+	testLogging {
+		events 'passed', 'skipped', 'failed'
+	}
+	shouldRunAfter tasks.named('test')
 }
