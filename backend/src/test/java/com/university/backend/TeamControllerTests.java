@@ -1,5 +1,7 @@
 package com.university.backend;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,6 +34,10 @@ class TeamControllerTests {
     @MockitoBean
     private AirportRepository airportRepo;
 
+    /**
+     * Test that all autowired-annotated fields are correctly initialized
+     * by Spring's dependency injection facilities.
+    */
     @Test
     void contextLoads() {
         assertThat(controller).isNotNull();
