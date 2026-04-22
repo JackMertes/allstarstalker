@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/allstarstalker/static/css/main.cd853261.css",
+    "main.js": "/allstarstalker/static/js/main.8507467e.js",
+    "static/media/logo.png": "/allstarstalker/static/media/logo.f88d9fa41a1f1cc25667.png",
+    "index.html": "/allstarstalker/index.html",
+    "main.cd853261.css.map": "/allstarstalker/static/css/main.cd853261.css.map",
+    "main.8507467e.js.map": "/allstarstalker/static/js/main.8507467e.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.cd853261.css",
+    "static/js/main.8507467e.js"
+  ]
+}
